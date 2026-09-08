@@ -62,19 +62,72 @@
 
   \end{tikzpicture}}
 
+
 % ---------------------------------------------------------------------
 % \ptanalogy : written instruction vs its learned counterpart
 % ---------------------------------------------------------------------
 \newcommand{\ptanalogy}{%
   \begin{tikzpicture}
-    \node[ptnode,minimum width=4.4cm,minimum height=1.9cm,text width=3.9cm,font=\small,align=left]
-          (a) at (2.30,0) {``Write a poem with an ABAB rhyme scheme, in iambic tetrameter, about love.''};
-    \node[pttuned,minimum width=4.4cm,minimum height=1.9cm,text width=3.9cm,align=center]
-          (b) at (8.20,0) {\ttfamily\scriptsize 0.14\ \ $-$0.72\ \ 0.31\ \ 0.08\\[3pt]$-$0.45\ \ 0.19\ \ 0.66\ \ $-$0.27\\[3pt]0.52\ \ $-$0.11\ \ 0.03\ \ 0.94};
-    \node[ptlbl,anchor=south] at (2.30,1.05) {what we would write};
-    \node[ptlblg,anchor=south] at (8.20,1.05) {what it learns instead};
-    \draw[ptarrow] (4.60,0) -- (5.90,0);
-  \end{tikzpicture}}
+
+    % ---------------------------------------------------------------
+    % Overlay 1: only the left box + its label, centered
+    % ---------------------------------------------------------------
+    \only<1>{%
+      \node[
+        ptnode,
+        minimum width=4.4cm,
+        minimum height=1.9cm,
+        text width=3.9cm,
+        font=\small,
+        align=left
+      ] (a1) at (5.25,0)
+      {``Write a poem with an ABAB rhyme scheme, in iambic tetrameter, about love.''};
+
+      \node[
+        ptlbl,
+        anchor=south
+      ] at (5.25,1.05)
+      {what we would write};
+    }
+
+    % ---------------------------------------------------------------
+    % Overlay 2: original complete layout
+    % ---------------------------------------------------------------
+    \only<2>{%
+      \node[
+        ptnode,
+        minimum width=4.4cm,
+        minimum height=1.9cm,
+        text width=3.9cm,
+        font=\small,
+        align=left
+      ] (a) at (2.30,0)
+      {``Write a poem with an ABAB rhyme scheme, in iambic tetrameter, about love.''};
+
+      \node[
+        pttuned,
+        minimum width=4.4cm,
+        minimum height=1.9cm,
+        text width=3.9cm,
+        align=center
+      ] (b) at (8.20,0)
+      {\ttfamily\scriptsize
+        0.14\ \ $-$0.72\ \ 0.31\ \ 0.08\\[3pt]
+        $-$0.45\ \ 0.19\ \ 0.66\ \ $-$0.27\\[3pt]
+        0.52\ \ $-$0.11\ \ 0.03\ \ 0.94
+      };
+
+      \node[ptlbl,anchor=south] at (2.30,1.05)
+        {what we would write};
+
+      \node[ptlblg,anchor=south] at (8.20,1.05)
+        {what it learns instead};
+
+      \draw[ptarrow] (4.60,0) -- (5.90,0);
+    }
+
+  \end{tikzpicture}%
+}
 
 % ---------------------------------------------------------------------
 % \ptbenefitscycle : four-arc pinwheel + 2x2 label grid (Benefits frame)
@@ -214,20 +267,34 @@
 % ---------------------------------------------------------------------
 \newcommand{\pttrainloop}{%
   \begin{tikzpicture}
+    % Top row (visible on both slides)
     \node[pttuned,minimum width=2.6cm,minimum height=0.9cm,font=\scriptsize] (init) at (1.30,1.00)
          {initialise the\\[-1pt]soft prompt};
-    \node[ptnode,minimum width=2.8cm,minimum height=0.9cm,font=\scriptsize]  (fwd)  at (4.80,1.00)
+
+    \node[ptnode,minimum width=2.8cm,minimum height=0.9cm,font=\scriptsize] (fwd) at (4.80,1.00)
          {forward pass\\[-1pt]through the frozen model};
-    \node[ptnode,minimum width=2.6cm,minimum height=0.9cm,font=\scriptsize]  (loss) at (8.30,1.00)
+
+    \node[ptnode,minimum width=2.6cm,minimum height=0.9cm,font=\scriptsize] (loss) at (8.30,1.00)
          {cross-entropy\\[-1pt]loss};
-    \node[pttuned,minimum width=3.6cm,minimum height=1.1cm,font=\scriptsize] (upd)  at (6.55,-0.95)
-         {backpropagate,\\[0.0pt]update the soft prompt only};
+
+    % Top arrows (visible on both slides)
     \draw[ptarrow] (init.east) -- (fwd.west);
     \draw[ptarrow] (fwd.east)  -- (loss.west);
-    \draw[ptarrow] (loss.south) -- (loss.south |- upd.north);
-    \draw[ptarrow] (fwd.south  |- upd.north) -- (fwd.south);
-    \node[ptlbl,anchor=north] at (3.00,-0.7) {repeat until convergence};
-  \end{tikzpicture}}
+
+    % Bottom training loop (appears only on overlay 2)
+    \only<2->{%
+        \node[pttuned,minimum width=3.6cm,minimum height=1.1cm,font=\scriptsize] 
+        (upd) at (6.55,-0.95)
+        {backpropagate,\\[0.0pt]update the soft prompt only};
+
+        \draw[ptarrow] (loss.south) -- (loss.south |- upd.north);
+        \draw[ptarrow] (fwd.south |- upd.north) -- (fwd.south);
+
+        \node[ptlbl,anchor=north] at (3.00,-0.7) 
+        {repeat until convergence};
+    }
+  \end{tikzpicture}%
+}
 
 % ---------------------------------------------------------------------
 % \ptsoftpromptinit : four learnable prompt-vector chips, prepended to
@@ -294,23 +361,82 @@
 % ---------------------------------------------------------------------
 \newcommand{\ptwexinit}{%
   \begin{tikzpicture}
-    \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
-      \node[pttuned,minimum width=0.85cm,minimum height=0.85cm,font=\small]
-            (p\i) at (0.95*\i,0) {$\lbl$};}
 
-    \node[font=\large,text=ptmuted] (plus) at (2.89,0) {$+$};
+    % ==================================================
+    % Overlay 1: Only the input sentence, solid style
+    % Same size as the input box on Overlay 2
+    % ==================================================
+    \only<1>{%
+      \node[
+        ptnode,
+        minimum width=4.3cm,
+        minimum height=0.85cm,
+        font=\small
+      ] at (3.55,0)
+      {``The movie was fantastic.''};
+    }
 
-    \node[ptghost,minimum width=4.3cm,minimum height=0.85cm,font=\small]
-          (inp) at (5.55,0) {``The movie was fantastic.''};
+    % ==================================================
+    % Overlay 2 onwards: Full soft prompt illustration
+    % ==================================================
+    \only<2->{%
 
-    \draw[decorate,decoration={brace,amplitude=6pt,mirror},draw=ptgreen,line width=0.9pt]
-         (-0.425,-0.55) -- (2.325,-0.55);
+      % Soft prompt tokens
+      \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
+        \node[
+          pttuned,
+          minimum width=0.85cm,
+          minimum height=0.85cm,
+          font=\small
+        ]
+        (p\i) at (0.95*\i,0) {$\lbl$};
+      }
 
-    \draw[ptarrow,line width=1.0pt] (0.95,-0.85) -- (0.95,-1.35);
+      % Plus sign
+      \node[
+        font=\large,
+        text=ptmuted
+      ] (plus) at (2.89,0) {$+$};
 
-    \node[pttuned,minimum width=2.6cm,minimum height=0.68cm,font=\small\bfseries]
-          (sp) at (0.95,-1.75) {Soft Prompt};
-  \end{tikzpicture}}
+      % Original input sentence
+      \node[
+        ptghost,
+        minimum width=4.3cm,
+        minimum height=0.85cm,
+        font=\small
+      ]
+      (inp) at (5.55,0)
+      {``The movie was fantastic.''};
+
+      % Brace under prompt tokens
+      \draw[
+        decorate,
+        decoration={brace,amplitude=6pt,mirror},
+        draw=ptgreen,
+        line width=0.9pt
+      ]
+      (-0.425,-0.55) -- (2.325,-0.55);
+
+      % Arrow to label
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0.95,-0.85) -- (0.95,-1.35);
+
+      % Soft Prompt label
+      \node[
+        pttuned,
+        minimum width=2.6cm,
+        minimum height=0.68cm,
+        font=\small\bfseries
+      ]
+      (sp) at (0.95,-1.75)
+      {Soft Prompt};
+    }
+
+  \end{tikzpicture}%
+}
 
   % ---------------------------------------------------------------------
 % \ptwexfreeze : worked-example Step 3 -- frozen pretrained model above,
@@ -320,20 +446,85 @@
 % arrow x=0, y=0.55 down to y=-0.35; label at y=0.10;
 % soft prompt box (0,-0.9) 3.4x0.85; "updated" label at y=-1.45.
 % ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexfreeze : worked-example Step 3 -- animated version
+%
+% Overlay 1:
+%   - Shows only the "Pretrained Model Frozen" box
+%   - Snow mark remains visible
+%   - Everything below the model is hidden
+%
+% Overlay 2:
+%   - Shows the complete diagram
+%   - Arrow, "weights frozen" label, soft prompt, and
+%     "only P is updated" note appear
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexfreeze : worked-example Step 3 -- animated version
+% ---------------------------------------------------------------------
 \newcommand{\ptwexfreeze}{%
   \begin{tikzpicture}
-    \node[ptfrozen,minimum width=4.6cm,minimum height=1.4cm,align=center,font=\small]
-          (lm) at (0,1.4) {Pretrained Model\\[1pt]{\bfseries\footnotesize Frozen}};
+
+    % Pretrained model -- visible on both overlays
+    \node[
+      ptfrozen,
+      minimum width=4.6cm,
+      minimum height=1.4cm,
+      align=center,
+      font=\small
+    ]
+    (lm) at (0,1.4)
+    {Pretrained Model\\[1pt]{\bfseries\footnotesize Frozen}};
+
     \ptsnow{(1.95,1.05)}
 
-    \draw[ptarrow,line width=1.0pt] (0,0.55) -- (0,-0.30);
-    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.25,0.13) {weights frozen};
+    % ================================================================
+    % Bottom section -- hidden on overlay 1, visible on overlay 2
+    % Space is preserved on both overlays
+    % ================================================================
+    \uncover<2->{%
 
-    \node[pttuned,minimum width=3.4cm,minimum height=0.85cm,font=\small\bfseries]
-          (sp) at (0,-0.75) {$P=[p_1,p_2,p_3]$};
+      % Arrow showing frozen weights
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0,0.55) -- (0,-0.30);
 
-    \node[ptlblg,anchor=north,font=\scriptsize] at (0,-1.20) {only $P$ is updated};
-  \end{tikzpicture}}
+      % "weights frozen" label
+      \node[
+        ptlbl,
+        anchor=west,
+        font=\scriptsize,
+        text=ptmuted
+      ]
+      at (0.25,0.13)
+      {weights frozen};
+
+      % Soft prompt
+      \node[
+        pttuned,
+        minimum width=3.4cm,
+        minimum height=0.85cm,
+        font=\small\bfseries
+      ]
+      (sp) at (0,-0.75)
+      {$P=[p_1,p_2,p_3]$};
+
+      % Updated note
+      \node[
+        ptlblg,
+        anchor=north,
+        font=\scriptsize
+      ]
+      at (0,-1.20)
+      {only $P$ is updated};
+
+    }
+
+  \end{tikzpicture}%
+}
+
 
   % ---------------------------------------------------------------------
 % \ptwexforward : worked-example Step 4 -- [p1 p2 p3] + input flows into
@@ -343,34 +534,144 @@
 % Coordinate map: chip/input row y=2.0; model box (0,0.9) 4.6x1.0;
 % arrows at x=0; prediction row y=-0.55, two boxes at x=-1.3 and x=1.3.
 % ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexforward : worked-example Step 4 -- animated version
+% ---------------------------------------------------------------------
 \newcommand{\ptwexforward}{%
   \begin{tikzpicture}
+
+    % ================================================================
+    % Top row -- kept exactly as before
+    % ================================================================
     \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
-      \node[pttuned,minimum width=0.72cm,minimum height=0.72cm,font=\small]
-            (p\i) at (-2.05+0.78*\i,2.5) {$\lbl$};}
-    \node[ptghost,minimum width=4.0cm,minimum height=0.72cm,font=\small]
-          (inp) at (2.3,2.5) {``The movie was fantastic.''};
+      \node[
+        pttuned,
+        minimum width=0.72cm,
+        minimum height=0.72cm,
+        font=\small
+      ]
+      (p\i) at (-2.05+0.78*\i,2.5) {$\lbl$};
+    }
 
-    \draw[ptarrow,line width=1.0pt] (0,1.82) -- (0,1.42);
+    \node[
+      ptghost,
+      minimum width=4.0cm,
+      minimum height=0.72cm,
+      font=\small
+    ]
+    (inp) at (2.3,2.5)
+    {``The movie was fantastic.''};
 
-    \node[ptfrozen,minimum width=4.6cm,minimum height=1.0cm,align=center,font=\small]
-          (lm) at (0,0.85) {Frozen Model};
-    \ptsnow{(1.85,0.85)}
+    % ================================================================
+    % Central vertical arrow
+    % Aligned below the top row
+    % ================================================================
+    \draw[
+      ptarrow,
+      line width=1.0pt
+    ]
+    (0.8,1.82) -- (0.8,1.42);
 
-    \draw[ptarrow,line width=1.0pt] (0,0.15) -- (0,-0.25);
-    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.20,-0.05) {prediction};
+    % ================================================================
+    % Frozen model
+    % Centered underneath the top row
+    % ================================================================
+    \node[
+      ptfrozen,
+      minimum width=4.6cm,
+      minimum height=1.0cm,
+      align=center,
+      font=\small
+    ]
+    (lm) at (0.8,0.85)
+    {Frozen Model};
 
-    \node[ptnode,fill=white,draw=ptrule,minimum width=2.2cm,minimum height=0.68cm,font=\scriptsize]
-          (pos) at (-1.30,-0.75) {Positive: $0.40$};
-    \node[ptnode,fill=ptred!12,draw=ptred,minimum width=2.2cm,minimum height=0.68cm,
-          font=\scriptsize\bfseries,text=ptred]
-          (neg) at (1.30,-0.75) {Negative: $0.60$};
+    % Snowflake / frozen indicator
+    \ptsnow{(2.65,0.85)}
 
-    \node[ptlbl,anchor=north,font=\scriptsize,text=ptmuted] at (-1.30,-1.5)
-         {actual class};
-    \node[ptlbl,anchor=north,font=\scriptsize,text=ptmuted] at (1.30,-1.5)
-         {predicted class};
-  \end{tikzpicture}}
+    % ================================================================
+    % Overlay 2: prediction section
+    % Animation strategy unchanged
+    % ================================================================
+    \uncover<2->{%
+
+      % --------------------------------------------------------------
+      % Central downward arrow
+      % Aligned with Frozen Model
+      % --------------------------------------------------------------
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0.8,0.15) -- (0.8,-0.25);
+
+      % --------------------------------------------------------------
+      % Prediction label
+      % --------------------------------------------------------------
+      \node[
+        ptlbl,
+        anchor=west,
+        font=\scriptsize,
+        text=ptmuted
+      ]
+      at (1.00,-0.05)
+      {prediction};
+
+      % --------------------------------------------------------------
+      % Probability boxes
+      % Centered around x=0.8
+      % --------------------------------------------------------------
+      \node[
+        ptnode,
+        fill=white,
+        draw=ptrule,
+        minimum width=2.2cm,
+        minimum height=0.68cm,
+        font=\scriptsize
+      ]
+      (pos) at (-0.50,-0.75)
+      {Positive: $0.40$};
+
+      \node[
+        ptnode,
+        fill=ptred!12,
+        draw=ptred,
+        minimum width=2.2cm,
+        minimum height=0.68cm,
+        font=\scriptsize\bfseries,
+        text=ptred
+      ]
+      (neg) at (2.10,-0.75)
+      {Negative: $0.60$};
+
+      % --------------------------------------------------------------
+      % Actual class
+      % --------------------------------------------------------------
+      \node[
+        ptlbl,
+        anchor=north,
+        font=\scriptsize,
+        text=ptmuted
+      ]
+      at (-0.50,-1.5)
+      {actual class};
+
+      % --------------------------------------------------------------
+      % Predicted class
+      % --------------------------------------------------------------
+      \node[
+        ptlbl,
+        anchor=north,
+        font=\scriptsize,
+        text=ptmuted
+      ]
+      at (2.10,-1.5)
+      {predicted class};
+
+    }
+
+  \end{tikzpicture}%
+}
 
   % ---------------------------------------------------------------------
 % \ptwexloss : worked-example Step 5 -- take the Positive probability
@@ -384,24 +685,83 @@
 % (0.40) from Step 4, run it through the cross-entropy formula, and
 % land on the numeric loss value.
 % ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexloss : worked-example Step 5 -- take the Positive probability
+% (0.40) from Step 4, run it through the cross-entropy formula, and
+% land on the numeric loss value.
+% ---------------------------------------------------------------------
 \newcommand{\ptwexloss}{%
   \begin{tikzpicture}
-    \node[ptnode,fill=white,draw=ptrule,minimum width=3.6cm,minimum height=0.75cm,font=\small]
-          (prob) at (0,0) {Positive probability: $0.40$};
 
-    \draw[ptarrow,line width=1.0pt] (0,-0.4) -- (0,-0.7);
+    % ---------------------------------------------------------------
+    % Positive probability
+    % ---------------------------------------------------------------
+    \node[
+      ptnode,
+      fill=white,
+      draw=ptrule,
+      minimum width=3.6cm,
+      minimum height=0.75cm,
+      font=\small
+    ]
+    (prob) at (0,0)
+    {Positive probability: $0.40$};
 
-    \node[font=\normalsize,text=ptink] at (0,-1.0)
-         {$L = -\log(p_{\text{correct}})$};
+    % ---------------------------------------------------------------
+    % Arrow to formula
+    % ---------------------------------------------------------------
+    \draw[
+      ptarrow,
+      line width=1.0pt
+    ]
+    (0,-0.4) -- (0,-0.7);
 
-    \node[font=\normalsize,text=ptink] at (0,-1.65)
-         {$L = -\log(0.40)$};
+    % ---------------------------------------------------------------
+    % Cross-entropy formula
+    % ---------------------------------------------------------------
+    \node[
+      font=\normalsize,
+      text=ptink
+    ]
+    at (0,-1.0)
+    {$L = -\log(p_{\text{correct}})$};
 
-    \draw[ptarrow,line width=1.0pt] (0,-1.95) -- (0,-2.25);
+    % ---------------------------------------------------------------
+    % Substitution
+    % ---------------------------------------------------------------
+    \node[
+      font=\normalsize,
+      text=ptink
+    ]
+    at (0,-1.65)
+    {$L = -\log(0.40)$};
 
-    \node[pttuned,minimum width=3cm,minimum height=0.8cm,font=\large\bfseries]
-          (loss) at (0,-2.75) {$L \approx 0.916$};
-  \end{tikzpicture}}
+    % ---------------------------------------------------------------
+    % Overlay 2:
+    % Arrow and final numerical loss box appear only on slide 2.
+    % \uncover keeps their space/position unchanged on slide 1.
+    % ---------------------------------------------------------------
+    \uncover<2->{%
+
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0,-1.95) -- (0,-2.25);
+
+      \node[
+        pttuned,
+        minimum width=3cm,
+        minimum height=0.8cm,
+        font=\large\bfseries
+      ]
+      (loss) at (0,-2.75)
+      {$L \approx 0.916$};
+
+    }
+
+  \end{tikzpicture}%
+}
 
   % ---------------------------------------------------------------------
 % \ptwexbackprop : worked-example Step 6 -- loss flows backward through
@@ -478,19 +838,58 @@
 % ---------------------------------------------------------------------
 \newcommand{\ptwexupdate}{%
   \begin{tikzpicture}
-    \node[ptnode,fill=white,draw=ptrule,minimum width=2.6cm,minimum height=0.65cm,font=\small]
-          (grad) at (0,1.0) {$\eta\nabla_P L$};
 
-    \draw[ptarrow,line width=1.0pt] (0,0.65) -- (0,0.35);
+    \uncover<2->{%
 
-    \node[ptnode,fill=white,draw=ptrule,minimum width=2.9cm,minimum height=0.65cm,font=\scriptsize]
-          (upd) at (0,0.0) {$P_{\text{new}} - \eta \nabla_P L$};
+      \node[
+        ptnode,
+        fill=white,
+        draw=ptrule,
+        minimum width=2.6cm,
+        minimum height=0.65cm,
+        font=\small
+      ]
+      (grad) at (0,1.0)
+      {$\eta\nabla_P L$};
 
-    \draw[ptarrow,line width=1.0pt] (0,-0.35) -- (0,-0.65);
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0,0.65) -- (0,0.35);
 
-    \node[ptnode,fill=white,draw=ptrule,minimum width=2.9cm,minimum height=0.7cm,font=\small]
-          (newp) at (0,-1.0) {$P_{\text{new}}$};
-  \end{tikzpicture}}
+      \node[
+        ptnode,
+        fill=white,
+        draw=ptrule,
+        minimum width=2.9cm,
+        minimum height=0.65cm,
+        font=\scriptsize
+      ]
+      (upd) at (0,0.0)
+      {$P_{\text{new}} - \eta \nabla_P L$};
+
+      \draw[
+        ptarrow,
+        line width=1.0pt
+      ]
+      (0,-0.35) -- (0,-0.65);
+
+      \node[
+        ptnode,
+        fill=white,
+        draw=ptrule,
+        minimum width=2.9cm,
+        minimum height=0.7cm,
+        font=\small
+      ]
+      (newp) at (0,-1.0)
+      {$P_{\text{new}}$};
+
+    }
+
+  \end{tikzpicture}%
+}
 
   % ---------------------------------------------------------------------
 % \ptworkflow : full pipeline summary -- define task, initialise P,

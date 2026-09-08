@@ -118,52 +118,70 @@
 
 \begin{frame}{Benefits of Prompt Tuning}
 
+  % =========================================================
+  % Covered content remains visible but transparent.
+  % Increase/decrease 30 to control the transparency.
+  % =========================================================
+  \setbeamercovered{transparent=20}
+
   \begin{columns}[T,onlytextwidth]
 
     % =========================================================
     % Efficient
+    % Visible from Slide 1 onward
     % =========================================================
     \begin{column}{0.31\textwidth}
 
-      {\large\bfseries\HL{1. Efficient}}
+      \uncover<1->{%
+        {\large\bfseries\HL{1. Efficient}}
 
-      \vspace{0.3 cm}
+        \vspace{0.3cm}
 
-      \small
-      Prompt tuning requires training only
-      a small number of prompt parameters, resulting in faster adaptation to new tasks.
+        \small
+        Prompt tuning requires training only
+        a small number of prompt parameters, resulting in faster
+        adaptation to new tasks.
+      }
 
     \end{column}
 
     % =========================================================
     % Flexible
+    % Fully visible from Slide 2 onward
+    % Transparent on Slide 1
     % =========================================================
     \begin{column}{0.31\textwidth}
 
-      {\large\bfseries\HL{2. Flexible}}
+      \uncover<2->{%
+        {\large\bfseries\HL{2. Flexible}}
 
-      \vspace{0.3cm}
+        \vspace{0.3cm}
 
-      \small
-      Prompt tuning can be applied to a wide range of tasks
-      in various domains, including natural language processing,
-      image classification, and code generation.
+        \small
+        Prompt tuning can be applied to a wide range of tasks
+        in various domains, including natural language processing,
+        image classification, and code generation.
+      }
 
     \end{column}
 
     % =========================================================
     % Interpretable
+    % Fully visible from Slide 3 onward
+    % Transparent on Slides 1 and 2
     % =========================================================
     \begin{column}{0.31\textwidth}
 
-      {\large\bfseries\HL{3. Interpretable}}
+      \uncover<3->{%
+        {\large\bfseries\HL{3. Interpretable}}
 
-      \vspace{0.3 cm}
+        \vspace{0.3cm}
 
-      \small
-      With prompt tuning, it is possible to inspect the prompt
-      parameters to understand how the LLM is being guided
-      towards generating the desired output.
+        \small
+        With prompt tuning, it is possible to inspect the prompt
+        parameters to understand how the LLM is being guided
+        towards generating the desired output.
+      }
 
     \end{column}
 
@@ -441,23 +459,47 @@
 
 \begin{frame}{Step 5: Calculate the Loss}
   \small
-  {\raggedright We use cross-entropy loss. The correct class is \\Positive,
+
+  {\raggedright
+  We use cross-entropy loss. The correct class is \\Positive,
   whose predicted probability was $0.40$.\par}
 
   \vskip0.3cm
+
   \begin{columns}[T]
+
     \column{0.52\textwidth}
       \small
+
       \begin{itemize}\itemsep6pt
-        \item \small $L = -\log(p_{\text{correct}})$
-        \item \small $L = -\log(0.40) = -(-0.9163)$
-        \item \small $L \approx \HL{0.916}$
+
+        \item \small
+        $L = -\log(p_{\text{correct}})$
+
+        \item \small
+        $L = -\log(0.40) = -(-0.9163)$
+
+        % -----------------------------------------------------------
+        % Overlay 2:
+        % This bullet is invisible on overlay 1 but still occupies
+        % exactly the same space, so nothing moves.
+        % -----------------------------------------------------------
+        \uncover<2->{%
+          \item \small
+          $L \approx \HL{0.916}$
+        }
+
       \end{itemize}
+
     \column{0.44\textwidth}
       \centering
+
       \vspace{-0.9cm}%
+
       \resizebox{0.6\linewidth}{!}{\ptwexloss}
+
   \end{columns}
+
 \end{frame}
 
 \begin{frame}{Step 6: Backpropagation}
@@ -485,47 +527,124 @@
 
 \begin{frame}{Step 7: Update the Soft Prompt}
   \small
-  \noindent With learning rate $\eta = 0.1$, the optimizer moves $P$ in the
+
+  % ================================================================
+  % Visible on both overlays
+  % ================================================================
+  \noindent
+  With learning rate $\eta = 0.1$, the optimizer moves $P$ in the
   direction that \HL{reduces the loss}:\par
+
   \vskip0.4cm
-  \noindent $P_{\text{new}} = P_{\text{old}} - \eta \nabla_P L
-    \qquad\Longrightarrow\qquad
-    P_{\text{new}} = P_{\text{old}} +
-    \begin{bmatrix} -0.02 \\ +0.01 \\ -0.03 \end{bmatrix}$
+
+  % ================================================================
+  % Update equation
+  %
+  % Overlay 1:
+  %   Only the LHS is displayed, centered on the page.
+  %
+  % Overlay 2:
+  %   The complete equation is displayed, centered on the page.
+  %
+  % The equation is enlarged with \Large.
+  % ================================================================
+\begin{center}
+  {\large
+    \alt<1>{%
+      $P_{\text{new}} = P_{\text{old}} - \eta \nabla_P L$
+    }{%
+      $P_{\text{new}} = P_{\text{old}} - \eta \nabla_P L
+      \qquad\Longrightarrow\qquad
+      P_{\text{new}} = P_{\text{old}} +
+      \begin{bmatrix}
+        -0.02 \\
+        +0.01 \\
+        -0.03
+      \end{bmatrix}$%
+    }
+  }
+\end{center}
+
   \vskip0.3cm
+
+  % ================================================================
+  % Overlay 2:
+  % Bullet points appear only on the second overlay.
+  % ================================================================
   \begin{itemize}\itemsep4pt
-    \item \small $p_1$ moves by $-0.02$
-    \item \small $p_2$ moves by $+0.01$
-    \item \small $p_3$ moves by $-0.03$
+
+    \uncover<2->{%
+      \item \small $p_1$ moves by $-0.02$
+      \item \small $p_2$ moves by $+0.01$
+      \item \small $p_3$ moves by $-0.03$
+    }
+
   \end{itemize}
+
   \vskip0.15cm
 
-  
   \vskip0.2cm
-  \raggedright{\ptcap{The minus sign moves $P$ toward lower loss, not higher. Only the soft prompt moves in embedding space; the pretrained
-         model remains completely frozen.}\par}
+
+  % ================================================================
+  % Overlay 2:
+  % Explanatory caption appears only on the second overlay.
+  % ================================================================
+  \uncover<2->{%
+    \raggedright
+    {\ptcap{The minus sign moves $P$ toward lower loss, not higher.
+    Only the soft prompt moves in embedding space; the pretrained
+    model remains completely frozen.}\par}
+  }
+
 \end{frame}
+
 \begin{frame}{Steps 8 \& 9: Repeat and Learn}
+
+  % =========================================================
+  % Covered content remains visible but transparent.
+  % Increase/decrease 20 to control the transparency.
+  % =========================================================
+  \setbeamercovered{transparent=30}
+
   \small
   \begin{columns}[T]
-    \column{0.48\textwidth}
-      \textbf{\HL{Step 8: Repeat the Steps}}
-      \vskip0.15cm
-      {\raggedright \small After updating the soft prompt, we move to the
-      next example. The same cycle repeats:
-      forward pass through the frozen model, loss against the target,
-      backpropagation to find how $P$ should change.\par}
-      
 
+    % =========================================================
+    % STEP 8
+    % Fully visible from Slide 1 onward
+    % =========================================================
     \column{0.48\textwidth}
-      \textbf{\HL{Step 9: The Prompt Learns}}
-      \vskip0.15cm
-      {\raggedright \small Initially, $P$ holds random vectors, so the
-      model produces incorrect predictions and \HLred{high loss}. As
-      gradient updates accumulate, these vectors are gradually shaped
-      into a useful, task-specific representation.\par}
-      
+
+      \uncover<1->{%
+        \textbf{\HL{Step 8: Repeat the Steps}}
+        \vskip0.15cm
+        {\raggedright \small
+        After updating the soft prompt, we move to the
+        next example. The same cycle repeats:
+        forward pass through the frozen model, loss against the target,
+        backpropagation to find how $P$ should change.\par}
+      }
+
+
+    % =========================================================
+    % STEP 9
+    % Transparent on Slide 1
+    % Fully visible on Slide 2
+    % =========================================================
+    \column{0.48\textwidth}
+
+      \uncover<2->{%
+        \textbf{\HL{Step 9: The Prompt Learns}}
+        \vskip0.15cm
+        {\raggedright \small
+        Initially, $P$ holds random vectors, so the
+        model produces incorrect predictions and \HLred{high loss}. As
+        gradient updates accumulate, these vectors are gradually shaped
+        into a useful, task-specific representation.\par}
+      }
+
   \end{columns}
+
 \end{frame}
 
 \begin{frame}{Workflow 1: \HL{Define the Training Task}}
@@ -642,6 +761,20 @@
       \emph{WARP: Word-level Adversarial ReProgramming.} ACL 2021.
   \end{thebibliography}
 \end{frame}
+
+\begingroup
+\setbeamercolor{background canvas}{bg=ptdark}
+\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \begin{center}
+    \vfill
+    {\fontsize{23}{29}\selectfont\bfseries\color{ptbg}
+    ``What AI learns from us today,\\
+    shapes the world tomorrow.''\par}
+    \vfill
+  \end{center}
+\end{frame}
+\endgroup
 
 \begingroup
 \setbeamercolor{background canvas}{bg=ptdark}
