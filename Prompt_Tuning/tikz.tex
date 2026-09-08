@@ -1,0 +1,540 @@
+% =====================================================================
+%  tikz.tex  --  every drawing in the deck, as a macro.
+%  Loaded from main.tex BEFORE \begin{document}, so no parameterised
+%  tikz style is ever defined inside a frame.
+%
+%  Chart data: figures quoted in the text of Lester et al. (2021) are
+%  exact (71.8, 89.3, and every parameter count, from the prose and
+%  Table 4).  Curve values that exist in that paper only as plotted
+%  lines are digitised approximations -- good enough to carry the
+%  argument, not citable to a decimal place.
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% \ptsnow{(x,y)} : tiny frost mark meaning "frozen / not updated"
+% ---------------------------------------------------------------------
+\newcommand{\ptsnow}[1]{%
+  \begin{scope}[shift={#1}]
+    \foreach \a in {0,60,120}{\draw[line width=0.6pt,draw=ptblue] (\a:0.13) -- (\a+180:0.13);}
+  \end{scope}}
+
+% ---------------------------------------------------------------------
+% \ptdot{color} : small inline colour chip, usable inside running text
+% ---------------------------------------------------------------------
+\newcommand{\ptdot}[1]{%
+  \tikz[baseline=-0.55ex]\node[ptchip,draw=#1,fill=#1!18,
+        minimum width=0.42cm,minimum height=0.30cm]{};}
+
+% ---------------------------------------------------------------------
+% \ptprompttuning : frozen model fed by a learned soft prompt (chips)
+% plus the ordinary input text (frozen embeddings) -- half-width column.
+% Coordinate map: model box (0,2.55) 4.3x1.15;
+% soft-prompt chips centred x=-1.15, 3 chips, 0.5cm pitch, y=0;
+% input chips centred x=1.75, 6 chips, 0.44cm pitch, y=0;
+% braces y=-0.26, labels y=-0.65.
+% ---------------------------------------------------------------------
+\newcommand{\ptprompttuning}{%
+  \begin{tikzpicture}
+
+    \node[ptfrozen,minimum width=4.3cm,minimum height=1.15cm,align=center,font=\small]
+          (lm) at (0,2.55) {Pre-trained Model\\[1pt]{\bfseries\footnotesize Frozen}};
+    \ptsnow{(1.75,2.15)}
+
+    \foreach \i in {0,1,2}{
+      \node[fill=ptgreen!18,draw=ptgreen,line width=0.9pt,rounded corners=3pt,
+            minimum width=0.46cm,minimum height=0.46cm] at (-1.55+0.5*\i,0) {};}
+    \draw[ptarrow] (-1.15,0.28) -- (-1.15,1.92);
+
+    \foreach \i in {0,...,5}{
+      \node[fill=white,draw=ptrule,line width=0.8pt,rounded corners=3pt,
+            minimum width=0.44cm,minimum height=0.44cm] at (1.10+0.44*\i,0) {};}
+    \draw[ptarrow] (1.75,0.28) -- (1.75,1.92);
+
+    \draw[decorate,decoration={brace,amplitude=4pt,mirror},draw=ptrule]
+         (-1.75,-0.26) -- (-0.55,-0.26);
+    \node[ptlbl,anchor=north,align=center,font=\scriptsize,text=ptgreen]
+         at (-1.15,-0.68) {Tunable\\Soft Prompt};
+
+    \draw[decorate,decoration={brace,amplitude=4pt,mirror},draw=ptrule]
+         (0.88,-0.26) -- (2.62,-0.26);
+    \node[ptlbl,anchor=north,font=\scriptsize,text=ptmuted]
+         at (1.75,-0.68) {Input Text};
+
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptanalogy : written instruction vs its learned counterpart
+% ---------------------------------------------------------------------
+\newcommand{\ptanalogy}{%
+  \begin{tikzpicture}
+    \node[ptnode,minimum width=4.4cm,minimum height=1.9cm,text width=3.9cm,font=\small,align=left]
+          (a) at (2.30,0) {``Write a poem with an ABAB rhyme scheme, in iambic tetrameter, about love.''};
+    \node[pttuned,minimum width=4.4cm,minimum height=1.9cm,text width=3.9cm,align=center]
+          (b) at (8.20,0) {\ttfamily\scriptsize 0.14\ \ $-$0.72\ \ 0.31\ \ 0.08\\[3pt]$-$0.45\ \ 0.19\ \ 0.66\ \ $-$0.27\\[3pt]0.52\ \ $-$0.11\ \ 0.03\ \ 0.94};
+    \node[ptlbl,anchor=south] at (2.30,1.05) {what we would write};
+    \node[ptlblg,anchor=south] at (8.20,1.05) {what it learns instead};
+    \draw[ptarrow] (4.60,0) -- (5.90,0);
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptbenefitscycle : four-arc pinwheel + 2x2 label grid (Benefits frame)
+% Coordinate map: ring r=1.5 centred at ORIGIN, shifted left by \ringshift.
+% Left column right-edges anchor at x=-2.2, right column left-edges
+% anchor at x=2.2 -- perfectly symmetric around the (unshifted) centre.
+% Each title is wrapped in \mbox{} so "chip + Title" can never hyphenate
+% mid-word; text width is generous enough that it always fits on one line.
+% Arcs use a thinner stroke (5pt) with an oversized Stealth tip so the
+% arrowhead reads clearly instead of being absorbed by a round cap.
+% ---------------------------------------------------------------------
+\newcommand{\ptbenefitscycle}{%
+  \begin{tikzpicture}
+    \def\R{1.5}
+    \def\ringshift{-0.4}  % negative = left; tweak this number to taste
+
+    \begin{scope}[shift={(\ringshift,0)}]
+      \foreach \c/\col in {45/ptgreen,135/ptorange,225/ptgold,315/ptblue}{
+        \draw[-{Stealth[length=9pt,width=8pt]},line width=5pt,line cap=round,draw=\col]
+             ({\c+32}:\R) arc ({\c+32}:{\c-32}:\R);}
+    \end{scope}
+
+    % top-left : Scale Solutions (orange)
+    \node[anchor=east,align=left,text width=4.6cm] at (-2.2,1.55)
+      {\mbox{\ptdot{ptorange}\ \textbf{\color{ptorange}Scale Solutions}}\\[3pt]
+       {\footnotesize\color{ptmuted}Implement AI across industries efficiently.}};
+
+    % bottom-left : Reduce Costs (gold)
+    \node[anchor=east,align=left,text width=4.6cm] at (-2.2,-1.55)
+      {\mbox{\ptdot{ptgold}\ \textbf{\color{ptgold}Reduce Costs}}\\[3pt]
+       {\footnotesize\color{ptmuted}Lower resource usage and expenses.}};
+
+    % top-right : Optimize Prompts (green)
+    \node[anchor=west,align=left,text width=4.6cm] at (2.2,1.55)
+      {\mbox{\ptdot{ptgreen}\ \textbf{\color{ptgreen}Optimize Prompts}}\\[3pt]
+       {\footnotesize\color{ptmuted}Refine input prompts for better results.}};
+
+    % bottom-right : Enhance Accuracy (blue)
+    \node[anchor=west,align=left,text width=4.6cm] at (2.2,-1.55)
+      {\mbox{\ptdot{ptblue}\ \textbf{\color{ptblue}Enhance Accuracy}}\\[3pt]
+       {\footnotesize\color{ptmuted}Improve model accuracy and context awareness.}};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptfullfinetune : Original LLM --(update all weights)--> Full Fine-Tuned LLM
+% ---------------------------------------------------------------------
+\newcommand{\ptfullfinetune}{%
+  \begin{tikzpicture}
+    \node[circle,draw=ptorange,fill=ptorange!15,line width=1.1pt,
+          minimum size=2.3cm,align=center,font=\small\bfseries,text=ptink]
+          (orig) at (0,0) {Original\\LLM};
+    \node[circle,draw=ptorange,fill=ptorange!15,line width=1.1pt,
+          minimum size=2.3cm,align=center,font=\scriptsize\bfseries,text=ptink]
+          (ft) at (6.4,0) {Full\\Fine-Tuned\\LLM};
+    \draw[ptarrow] (orig.east) -- (ft.west)
+          node[midway,above=2pt,align=center,font=\scriptsize,text=ptink]
+          {Update all the\\weights during\\training};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \pttuningcompare : model tuning (left) vs prompt tuning (right)
+% ---------------------------------------------------------------------
+\newcommand{\pttuningcompare}{%
+  \begin{tikzpicture}
+    \node[ptlbl,font=\small\bfseries,text=ptblue]  at (1.85,2.20) {Model tuning};
+    \node[ptlbl,font=\small\bfseries,text=ptgreen] at (7.40,2.20) {Prompt tuning};
+    \foreach \n/\y in {A/1.15,B/0,C/-1.15}{
+      \node[ptghost,minimum width=1.3cm,minimum height=0.62cm,font=\scriptsize] (l\n) at (0.45,\y) {Task \n};
+      \node[ptnode,fill=ptblue!10,draw=ptblue,minimum width=2.5cm,minimum height=0.72cm,font=\scriptsize]
+            (m\n) at (3.05,\y) {Task \n\ model, 11B};
+      \draw[ptarrow] (l\n.east) -- (m\n.west);}
+    \draw[ptrule,dashed,line width=0.9pt] (4.85,-2.30) -- (4.85,2.20);
+    \node[ptghost,minimum width=1.5cm,minimum height=2.3cm] (mix) at (6.00,0) {};
+    \foreach \i/\c in {0/ptgreen,1/ptorange,2/ptgold}{
+      \node[ptchip,draw=\c,fill=\c!18,minimum width=0.5cm,minimum height=0.34cm]
+            at (6.00,0.62-0.62*\i) {};}
+    \node[ptfrozen,minimum width=2.5cm,minimum height=2.3cm,align=center] (fm) at (8.75,0)
+         {frozen T5\\[-2pt]{\scriptsize 11B, shared}};
+    \ptsnow{(8.75,-0.78)}
+    \draw[ptarrow] (mix.east) -- (fm.west);
+    \node[ptlbl,anchor=north] at (6.00,-1.35) {mixed batch};
+    \node[ptlbl,anchor=north,text width=4.6cm] at (7.40,-2.00)
+         {one model, one batch, three tasks at once};
+    \node[ptlbl,anchor=north,text width=4.4cm] at (1.85,-1.65)
+         {a copy per task, a batch per task};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptinitmanifold : why TEXT/SAMPLE_VOCAB land inside the manifold and
+% RANDOM can land outside it. An informal blob, not a real geometric
+% embedding -- it only needs to carry "inside" vs "outside".
+% ---------------------------------------------------------------------
+\newcommand{\ptinitmanifold}{%
+  \begin{tikzpicture}
+    \fill[ptpanel,rounded corners=40pt] (-3.4,-1.7) rectangle (3.4,1.7);
+    \draw[ptrule,rounded corners=40pt,line width=0.8pt] (-3.4,-1.7) rectangle (3.4,1.7);
+    \node[ptlbl,anchor=north,font=\scriptsize] at (0,-2.05)
+         {the embedding manifold --- where real token vectors live};
+    \fill[ptgreen] (-1.6,0.5) circle (3.2pt);
+    \node[anchor=west,font=\scriptsize\bfseries,text=ptgreen] at (-1.35,0.5) {TEXT};
+    \fill[ptgold] (1.1,-0.55) circle (3.2pt);
+    \node[anchor=west,font=\scriptsize\bfseries,text=ptgold] at (1.35,-0.55) {SAMPLE\_VOCAB};
+    \draw[ptrule,dashed,line width=0.8pt] (3.4,1.15) -- (4.45,1.15);
+    \fill[ptred] (4.6,1.15) circle (3.2pt);
+    \node[anchor=west,font=\scriptsize\bfseries,text=ptred] at (4.85,1.15) {RANDOM};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptconverge : loss vs training steps for the soft prompt, with a
+% dashed reference line for where full model tuning typically lands.
+% Values are illustrative, matching the paper's reported 30,000-step
+% training schedule (Appendix A.1) -- not digitised from any figure.
+% ---------------------------------------------------------------------
+\newcommand{\ptconverge}{%
+\begin{tikzpicture}
+\begin{axis}[ptaxis,xlabel={training steps},ylabel={loss},
+             width=9.2cm,height=5.0cm,xmin=0,xmax=30000,ymin=0,ymax=3.6,
+             xtick={0,10000,20000,30000},xticklabels={0,10K,20K,30K},
+             legend pos=north east,legend cell align=left]
+  \addplot[ptcurve,color=ptgreen,mark=none,line width=1.6pt] coordinates
+    {(0,3.4)(2000,2.6)(5000,1.9)(10000,1.3)(15000,0.95)(20000,0.75)(25000,0.62)(30000,0.55)};
+  \addlegendentry{soft prompt loss}
+  \draw[ptrule,dashed,line width=0.9pt] (axis cs:0,0.48) -- (axis cs:30000,0.48);
+  \node[anchor=north east,font=\scriptsize,text=ptmuted] at (axis cs:29500,0.62)
+       {model tuning floor};
+\end{axis}
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \pttrainloop : the training cycle
+% Coordinate map:
+%   (init) (1.30, 1.00)  2.6 x 0.9
+%   (fwd)  (4.80, 1.00)  2.8 x 0.9
+%   (loss) (8.30, 1.00)  2.6 x 0.9
+%   (upd)  (6.55,-0.95)  3.6 x 0.9
+%   return: loss.south -> (8.30,-0.95) -> upd.east ; upd.west -> (4.80,-0.95) -> fwd.south
+% ---------------------------------------------------------------------
+\newcommand{\pttrainloop}{%
+  \begin{tikzpicture}
+    \node[pttuned,minimum width=2.6cm,minimum height=0.9cm,font=\scriptsize] (init) at (1.30,1.00)
+         {initialise the\\[-1pt]soft prompt};
+    \node[ptnode,minimum width=2.8cm,minimum height=0.9cm,font=\scriptsize]  (fwd)  at (4.80,1.00)
+         {forward pass\\[-1pt]through the frozen model};
+    \node[ptnode,minimum width=2.6cm,minimum height=0.9cm,font=\scriptsize]  (loss) at (8.30,1.00)
+         {cross-entropy\\[-1pt]loss};
+    \node[pttuned,minimum width=3.6cm,minimum height=1.1cm,font=\scriptsize] (upd)  at (6.55,-0.95)
+         {backpropagate,\\[0.0pt]update the soft prompt only};
+    \draw[ptarrow] (init.east) -- (fwd.west);
+    \draw[ptarrow] (fwd.east)  -- (loss.west);
+    \draw[ptarrow] (loss.south) -- (loss.south |- upd.north);
+    \draw[ptarrow] (fwd.south  |- upd.north) -- (fwd.south);
+    \node[ptlbl,anchor=north] at (3.00,-0.7) {repeat until convergence};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptsoftpromptinit : four learnable prompt-vector chips, prepended to
+% an (untouched) input-text block, with a curly brace under the row
+% instead of an arrow pointing into the middle of it.
+% ---------------------------------------------------------------------
+\newcommand{\ptsoftpromptinit}{%
+  \begin{tikzpicture}
+    \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3,3/p_4}{
+      \node[pttuned,minimum width=0.85cm,minimum height=0.85cm,font=\small]
+            (p\i) at (0.95*\i,0) {$\lbl$};}
+    \node[font=\large,text=ptmuted] at (3.55,0) {$+$};
+    \node[ptghost,minimum width=2.6cm,minimum height=0.85cm,font=\small]
+          (inp) at (5.35,0) {Input Text};
+    \draw[decorate,decoration={brace,amplitude=6pt,mirror},draw=ptgreen,line width=0.9pt]
+         (-0.425,-0.55) -- (3.275,-0.55);
+    \node[ptlblg,anchor=north] at (1.425,-0.95) {Learnable};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptspectrum : Prompt Engineering -> Prompt Tuning -> Fine-Tuning
+% ---------------------------------------------------------------------
+\newcommand{\ptspectrum}{%
+  \begin{tikzpicture}
+    \draw[ptrule, line width=1.4pt, -{Stealth[length=6pt]}] (0,0) -- (10.4,0);
+    \foreach \x/\lbl/\col/\sub in {
+        0.4/{Prompt\\Engineering}/ptslate/{write it by hand},
+        5.2/{Prompt\\Tuning}/ptgreen/{learn a few vectors},
+        10.0/{Fine-Tuning}/ptorange/{update every weight}}{
+      \fill[\col] (\x,0) circle (3.2pt);
+      \node[ptlbl,font=\small\bfseries,text=\col,align=center] at (\x,0.75) {\lbl};
+      \node[ptlbl,font=\scriptsize,align=center] at (\x,-0.55) {\sub};
+    }
+    \node[ptlbl,font=\scriptsize,text=ptmuted] at (5.2,-1.35)
+         {\(\longleftarrow\) faster, cheaper \hspace{1.4cm} more control, more cost \(\longrightarrow\)};
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptradar : Fine-Tuning vs Prompt Tuning, 5-axis radar chart (diagram
+% only -- the legend is built separately in the slide, to its left).
+% ---------------------------------------------------------------------
+\newcommand{\ptradar}{  \begin{tikzpicture}    \def\R{1.75cm}     grid rings    \foreach \r in {1,2,3,4}{      \draw[ptrule,dashed,line width=0.3pt] (0,0) circle ({\r*\R/4});}    \draw[ptrule,line width=0.5pt] (0,0) circle (\R);     axes    \foreach \ang in {90,18,-54,-126,162}{      \draw[ptrule,line width=0.5pt] (0,0) -- (\ang:\R);}     labels: fixed offset beyond the ring, manual line breaks, anchor    chosen per side so the text grows outward, never back over the ring    \node[ptlbl,font=\small,align=center,anchor=south]         at (90:{\R+0.75cm}) {Speed of\\Implementation};    \node[ptlbl,font=\small,align=left,anchor=west]         at (18:{\R+0.60cm}) {Data\\Requirement};    \node[ptlbl,font=\small,align=left,anchor=north west]         at (-54:{\R+0.55cm}) {Output\\Quality};    \node[ptlbl,font=\small,align=right,anchor=north east]         at (-126:{\R+0.55cm}) {Model\\Modification};    \node[ptlbl,font=\small,align=right,anchor=east]         at (162:{\R+0.60cm}) {Flexibility};     Fine-tuning polygon: Speed 3, Data 9, Output 8, ModMod 8, Flex 5    \draw[ptorange,line width=1.3pt,fill=ptorange,fill opacity=0.14]      (90:{3/9*\R}) -- (18:{9/9*\R}) -- (-54:{8/9*\R}) --      (-126:{8/9*\R}) -- (162:{5/9*\R}) -- cycle;     Prompt tuning polygon: Speed 8, Data 2, Output 4, ModMod 1, Flex 7    \draw[ptslate,line width=1.3pt,fill=ptslate,fill opacity=0.18]      (90:{8/9*\R}) -- (18:{2/9*\R}) -- (-54:{4/9*\R}) --      (-126:{1/9*\R}) -- (162:{7/9*\R}) -- cycle;  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptwexinit : worked-example Step 2 -- concatenate p1,p2,p3 with the
+% first training example, then collapse down into "the soft prompt".
+% Coordinate map: chips at x=0,0.95,1.9, y=0; plus sign x=2.55;
+% input box centred x=5.55, y=0; arrow down from x=2.75 to y=-1.3;
+% result label at y=-1.7.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexinit : worked-example Step 2 -- concatenate p1,p2,p3 with the
+% first training example, then collapse down into "the soft prompt".
+% Coordinate map: chips at x=0,0.95,1.9, y=0; plus sign x=2.55;
+% input box centred x=5.55, y=0; arrow down from x=2.75 to y=-1.3;
+% result label at y=-2.65.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexinit : worked-example Step 2 -- concatenate p1,p2,p3 with the
+% first training example, then collapse down into "the soft prompt".
+% Coordinate map: chips at x=0,0.95,1.9, y=0; plus sign x=2.55;
+% input box centred x=5.55, y=0; brace at y=-0.55; arrow y=-0.75 to -1.30;
+% result box at y=-1.75.
+% ---------------------------------------------------------------------
+\newcommand{\ptwexinit}{%
+  \begin{tikzpicture}
+    \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
+      \node[pttuned,minimum width=0.85cm,minimum height=0.85cm,font=\small]
+            (p\i) at (0.95*\i,0) {$\lbl$};}
+
+    \node[font=\large,text=ptmuted] (plus) at (2.89,0) {$+$};
+
+    \node[ptghost,minimum width=4.3cm,minimum height=0.85cm,font=\small]
+          (inp) at (5.55,0) {``The movie was fantastic.''};
+
+    \draw[decorate,decoration={brace,amplitude=6pt,mirror},draw=ptgreen,line width=0.9pt]
+         (-0.425,-0.55) -- (2.325,-0.55);
+
+    \draw[ptarrow,line width=1.0pt] (0.95,-0.85) -- (0.95,-1.35);
+
+    \node[pttuned,minimum width=2.6cm,minimum height=0.68cm,font=\small\bfseries]
+          (sp) at (0.95,-1.75) {Soft Prompt};
+  \end{tikzpicture}}
+
+  % ---------------------------------------------------------------------
+% \ptwexfreeze : worked-example Step 3 -- frozen pretrained model above,
+% soft prompt P below, connected by a "weights frozen" arrow, with a
+% small checkmark note that only P is updated.
+% Coordinate map: model box (0,1.4) 4.6x1.4; snow mark at (2.0,1.05);
+% arrow x=0, y=0.55 down to y=-0.35; label at y=0.10;
+% soft prompt box (0,-0.9) 3.4x0.85; "updated" label at y=-1.45.
+% ---------------------------------------------------------------------
+\newcommand{\ptwexfreeze}{%
+  \begin{tikzpicture}
+    \node[ptfrozen,minimum width=4.6cm,minimum height=1.4cm,align=center,font=\small]
+          (lm) at (0,1.4) {Pretrained Model\\[1pt]{\bfseries\footnotesize Frozen}};
+    \ptsnow{(1.95,1.05)}
+
+    \draw[ptarrow,line width=1.0pt] (0,0.55) -- (0,-0.30);
+    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.25,0.13) {weights frozen};
+
+    \node[pttuned,minimum width=3.4cm,minimum height=0.85cm,font=\small\bfseries]
+          (sp) at (0,-0.75) {$P=[p_1,p_2,p_3]$};
+
+    \node[ptlblg,anchor=north,font=\scriptsize] at (0,-1.20) {only $P$ is updated};
+  \end{tikzpicture}}
+
+  % ---------------------------------------------------------------------
+% \ptwexforward : worked-example Step 4 -- [p1 p2 p3] + input flows into
+% the frozen model, producing a two-class probability readout where the
+% predicted class (Negative, 0.60) is wrong against the true label
+% (Positive, 0.40), flagged in ptred.
+% Coordinate map: chip/input row y=2.0; model box (0,0.9) 4.6x1.0;
+% arrows at x=0; prediction row y=-0.55, two boxes at x=-1.3 and x=1.3.
+% ---------------------------------------------------------------------
+\newcommand{\ptwexforward}{%
+  \begin{tikzpicture}
+    \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
+      \node[pttuned,minimum width=0.72cm,minimum height=0.72cm,font=\small]
+            (p\i) at (-2.05+0.78*\i,2.5) {$\lbl$};}
+    \node[ptghost,minimum width=4.0cm,minimum height=0.72cm,font=\small]
+          (inp) at (2.3,2.5) {``The movie was fantastic.''};
+
+    \draw[ptarrow,line width=1.0pt] (0,1.82) -- (0,1.42);
+
+    \node[ptfrozen,minimum width=4.6cm,minimum height=1.0cm,align=center,font=\small]
+          (lm) at (0,0.85) {Frozen Model};
+    \ptsnow{(1.85,0.85)}
+
+    \draw[ptarrow,line width=1.0pt] (0,0.15) -- (0,-0.25);
+    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.20,-0.05) {prediction};
+
+    \node[ptnode,fill=white,draw=ptrule,minimum width=2.2cm,minimum height=0.68cm,font=\scriptsize]
+          (pos) at (-1.30,-0.75) {Positive: $0.40$};
+    \node[ptnode,fill=ptred!12,draw=ptred,minimum width=2.2cm,minimum height=0.68cm,
+          font=\scriptsize\bfseries,text=ptred]
+          (neg) at (1.30,-0.75) {Negative: $0.60$};
+
+    \node[ptlbl,anchor=north,font=\scriptsize,text=ptmuted] at (-1.30,-1.5)
+         {actual class};
+    \node[ptlbl,anchor=north,font=\scriptsize,text=ptmuted] at (1.30,-1.5)
+         {predicted class};
+  \end{tikzpicture}}
+
+  % ---------------------------------------------------------------------
+% \ptwexloss : worked-example Step 5 -- take the Positive probability
+% (0.40) from Step 4, run it through the cross-entropy formula, and
+% land on the numeric loss value.
+% Coordinate map: prob box (0,1.3); formula row y=0.35;
+% substitution row y=-0.35; result stat at y=-1.15.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexloss : worked-example Step 5 -- take the Positive probability
+% (0.40) from Step 4, run it through the cross-entropy formula, and
+% land on the numeric loss value.
+% ---------------------------------------------------------------------
+\newcommand{\ptwexloss}{%
+  \begin{tikzpicture}
+    \node[ptnode,fill=white,draw=ptrule,minimum width=3.6cm,minimum height=0.75cm,font=\small]
+          (prob) at (0,0) {Positive probability: $0.40$};
+
+    \draw[ptarrow,line width=1.0pt] (0,-0.4) -- (0,-0.7);
+
+    \node[font=\normalsize,text=ptink] at (0,-1.0)
+         {$L = -\log(p_{\text{correct}})$};
+
+    \node[font=\normalsize,text=ptink] at (0,-1.65)
+         {$L = -\log(0.40)$};
+
+    \draw[ptarrow,line width=1.0pt] (0,-1.95) -- (0,-2.25);
+
+    \node[pttuned,minimum width=3cm,minimum height=0.8cm,font=\large\bfseries]
+          (loss) at (0,-2.75) {$L \approx 0.916$};
+  \end{tikzpicture}}
+
+  % ---------------------------------------------------------------------
+% \ptwexbackprop : worked-example Step 6 -- loss flows backward through
+% the frozen model, gradients reach the soft-prompt chips, and the
+% optimizer picks up nabla_P L. Frozen model uses ptsnow, chips use
+% pttuned, matching Steps 2/3/4.
+% Coordinate map: loss box y=1.7; frozen model y=0.45; chips y=-0.85;
+% grad label y=-1.25; optimizer ghost box y=-2.15.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexbackprop : worked-example Step 6 -- loss flows backward through
+% the frozen model, gradients reach the soft-prompt chips, and the
+% optimizer picks up nabla_P L. Compact vertical spacing so it fits
+% next to a text column without overflowing the frame.
+% Coordinate map: loss box y=1.15; frozen model y=0.30; chips y=-0.60;
+% grad label y=-0.92; optimizer ghost box y=-1.55.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexbackprop : worked-example Step 6 -- loss flows backward through
+% the frozen model, gradients reach the soft-prompt chips, and the
+% optimizer picks up nabla_P L. Every gap below accounts for the actual
+% node half-heights, so nothing overlaps once resized.
+% Coordinate map: loss y=2.0 (h0.55); model y=0.80 (h0.85); chips
+% y=-0.365 (h0.58); grad label y=-0.805; optimizer y=-1.43 (h0.45).
+% ---------------------------------------------------------------------
+\newcommand{\ptwexbackprop}{%
+  \begin{tikzpicture}
+    \node[ptnode,fill=white,draw=ptrule,minimum width=1.8cm,minimum height=0.55cm,font=\small\bfseries]
+          (loss) at (0,2.0) {Loss};
+
+    \draw[ptarrow,line width=1.0pt] (0,1.62) -- (0,1.32);
+    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.18,1.50);
+
+    \node[ptfrozen,minimum width=3.0cm,minimum height=0.85cm,align=center,font=\small]
+          (lm) at (0,0.80) {Frozen Model};
+    \ptsnow{(1.65,0.80)}
+
+    \draw[ptarrow,line width=1.0pt] (0,0.3) -- (0,-0.02);
+    \node[ptlbl,anchor=west,font=\scriptsize,text=ptmuted] at (0.18,0.13) ;
+
+    \foreach \i/\lbl in {0/p_1,1/p_2,2/p_3}{
+      \node[pttuned,minimum width=0.58cm,minimum height=0.58cm,font=\small]
+            (p\i) at (-0.66+0.66*\i,-0.365) {$\lbl$};}
+
+    \node[ptlblg,anchor=north,font=\scriptsize] at (0,-0.66);
+
+    \draw[ptarrow,line width=1.0pt] (0,-0.8) -- (0,-1.12);
+
+    \node[ptghost,minimum width=2.4cm,minimum height=0.45cm,font=\scriptsize]
+          (opt) at (0,-1.43) {optimizer uses $\nabla_P L$};
+  \end{tikzpicture}}
+
+
+  % ---------------------------------------------------------------------
+% \ptwexupdate : worked-example Step 7 -- P_old moves to P_new by
+% -eta * grad, shown as a short displacement in embedding space.
+% Coordinate map: manifold panel -2.2..2.2 x -1.1..1.1; P_old at
+% (-1.0,-0.3); P_new at (0.9,0.5); arrow between them; eta*grad label
+% at the arrow midpoint.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexupdate : worked-example Step 7 -- the update pipeline:
+% gradient -> update rule -> new soft prompt. Vertical flow, sized to
+% sit compactly beside a text column.
+% Coordinate map: grad box y=1.0; update ghost box y=0.0; new-P box
+% y=-1.0. Arrows fill the 0.35cm gaps between them.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptwexupdate : worked-example Step 7 -- the update pipeline:
+% gradient -> update rule -> new soft prompt. All boxes plain white,
+% regular-weight text.
+% Coordinate map: grad box y=1.0; update ghost box y=0.0; new-P box
+% y=-1.0. Arrows fill the 0.35cm gaps between them.
+% ---------------------------------------------------------------------
+\newcommand{\ptwexupdate}{%
+  \begin{tikzpicture}
+    \node[ptnode,fill=white,draw=ptrule,minimum width=2.6cm,minimum height=0.65cm,font=\small]
+          (grad) at (0,1.0) {$\eta\nabla_P L$};
+
+    \draw[ptarrow,line width=1.0pt] (0,0.65) -- (0,0.35);
+
+    \node[ptnode,fill=white,draw=ptrule,minimum width=2.9cm,minimum height=0.65cm,font=\scriptsize]
+          (upd) at (0,0.0) {$P_{\text{new}} - \eta \nabla_P L$};
+
+    \draw[ptarrow,line width=1.0pt] (0,-0.35) -- (0,-0.65);
+
+    \node[ptnode,fill=white,draw=ptrule,minimum width=2.9cm,minimum height=0.7cm,font=\small]
+          (newp) at (0,-1.0) {$P_{\text{new}}$};
+  \end{tikzpicture}}
+
+  % ---------------------------------------------------------------------
+% \ptworkflow : full pipeline summary -- define task, initialise P,
+% freeze the model (setup row), then the forward/loss/backprop/update
+% training loop, ending in the learned soft prompt.
+% Coordinate map: setup row y=3.0, x=-2.8/0/2.8; loop nodes at
+% (-1.4,1.6),(1.4,1.6),(1.4,0.2),(-1.4,0.2); final box y=-1.1.
+% ---------------------------------------------------------------------
+% ---------------------------------------------------------------------
+% \ptflowfirst{current} : opening step of a multi-slide flow -- just
+% the highlighted box, with a dashed arrow trailing off toward the
+% next slide.
+% ---------------------------------------------------------------------
+\newcommand{\ptflowfirst}[1]{%
+  \begin{tikzpicture}
+    \node[pttuned,minimum width=4.6cm,minimum height=0.9cm,font=\small\bfseries]
+          (cur) at (0,0) {#1};
+    \draw[ptarrow,dashed,line width=0.9pt] (0,-0.55) -- (0,-1.05);
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptflowstep{previous}{current} : a middle step -- previous box faded
+% at top, solid arrow down into the highlighted current box, dashed
+% arrow trailing off toward the next slide.
+% ---------------------------------------------------------------------
+\newcommand{\ptflowstep}[2]{%
+  \begin{tikzpicture}
+    \node[ptghost,minimum width=4.2cm,minimum height=0.75cm,font=\small,text=ptmuted]
+          (prev) at (0,1.35) {#1};
+    \draw[ptarrow,line width=1.0pt] (0,0.97) -- (0,0.50);
+    \node[pttuned,minimum width=4.6cm,minimum height=0.9cm,font=\small\bfseries]
+          (cur) at (0,0) {#2};
+    \draw[ptarrow,dashed,line width=0.9pt] (0,-0.55) -- (0,-1.05);
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+% \ptflowlast{previous}{current} : final step -- same as \ptflowstep
+% but no trailing arrow, since the chain ends here.
+% ---------------------------------------------------------------------
+\newcommand{\ptflowlast}[2]{%
+  \begin{tikzpicture}
+    \node[ptghost,minimum width=4.2cm,minimum height=0.75cm,font=\small,text=ptmuted]
+          (prev) at (0,1.35) {#1};
+    \draw[ptarrow,line width=1.0pt] (0,0.97) -- (0,0.50);
+    \node[pttuned,minimum width=4.6cm,minimum height=0.9cm,font=\small\bfseries]
+          (cur) at (0,0) {#2};
+  \end{tikzpicture}}

@@ -1,0 +1,243 @@
+% =====================================================================
+%  prompttheme.sty  --  visual identity for the Prompt Tuning deck
+% =====================================================================
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{prompttheme}[2026/09/02 Prompt Tuning deck theme]
+
+% ---------------------------------------------------------------- packages
+\RequirePackage{etoolbox}
+\RequirePackage{xcolor}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{booktabs}
+\RequirePackage{ragged2e}
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shapes.geometric,decorations.pathmorphing}
+\pgfplotsset{compat=1.18}
+
+% ---------------------------------------------------------------- fonts
+% Montserrat if the distribution has it (Overleaf does); Latin Modern Sans
+% everywhere else, so the deck always compiles.
+\IfFileExists{montserrat.sty}
+  {\RequirePackage[T1]{fontenc}%
+   \RequirePackage[defaultfam,tabular,lining]{montserrat}}
+  {\IfFileExists{lmodern.sty}{\RequirePackage{lmodern}\RequirePackage[T1]{fontenc}}{}%
+   \renewcommand{\familydefault}{\sfdefault}}
+\usefonttheme{professionalfonts}
+
+% ---------------------------------------------------------------- palette
+% One core accent (ptgreen = prompt tuning, the hero of the talk) plus a
+% small, colour-blind-safe supporting cast used consistently in every chart.
+\definecolor{ptbg}{HTML}{FBF8F3}      % warm paper  -- slide background
+\definecolor{ptpanel}{HTML}{F1EADE}   % panel tint
+\definecolor{ptink}{HTML}{1F2933}     % body text
+\definecolor{ptmuted}{HTML}{6A6255}   % secondary text
+\definecolor{ptrule}{HTML}{DCD3C4}    % hairlines, grids
+\definecolor{ptdark}{HTML}{1C2A26}    % full-bleed divider ground
+\definecolor{ptgreen}{HTML}{0F7B62}   % CORE ACCENT / prompt tuning
+\definecolor{ptblue}{HTML}{2F5D8A}    % model tuning
+\definecolor{ptorange}{HTML}{C2610A}  % model tuning (multi-task) / caution
+\definecolor{ptslate}{HTML}{7C8CA6}   % prompt design (GPT-3)
+\definecolor{ptred}{HTML}{A63446}     % alert / failure mode
+\definecolor{ptgold}{HTML}{B08307}    % tertiary series
+
+% semantic shorthands (used in text AND in tikz, so colour = meaning)
+\newcommand{\pos}[1]{\textcolor{ptblue}{#1}}
+\newcommand{\con}[1]{\textcolor{ptorange}{#1}}
+\newcommand{\HL}[1]{\textcolor{ptgreen}{\textbf{#1}}}
+\newcommand{\HLred}[1]{\textcolor{ptorange}{\textbf{#1}}}
+\newcommand{\mute}[1]{\textcolor{ptmuted}{#1}}
+
+% ---------------------------------------------------------------- geometry
+\setbeamersize{text margin left=0.9cm,text margin right=0.9cm}
+\setbeamertemplate{navigation symbols}{}
+
+% ---------------------------------------------------------------- colours
+\setbeamercolor{background canvas}{bg=ptbg}
+\setbeamercolor{normal text}{fg=ptink}
+\setbeamercolor{frametitle}{fg=ptink}
+\setbeamercolor{title}{fg=ptink}
+\setbeamercolor{structure}{fg=ptgreen}
+\setbeamercolor{itemize item}{fg=ptgreen}
+\setbeamercolor{itemize subitem}{fg=ptmuted}
+\setbeamercolor{footline}{fg=ptmuted}
+\setbeamercolor{caption name}{fg=ptmuted}
+\usebeamercolor[fg]{normal text}
+
+% ---------------------------------------------------------------- type
+\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\small}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{footline}{size=\scriptsize}
+
+% ------------------------------------------------- frame title: underline
+% ONE treatment only: a hairline under the title whose first 1.5cm is the
+% core accent.  Handles one- and two-line titles without shifting content.
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip%
+  \vskip0.85em%
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0pt]{frametitle}%
+    \hspace{0.9cm}%
+    \begin{minipage}[t]{\dimexpr\paperwidth-1.8cm\relax}%
+      \RaggedRight\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}%
+      \insertframetitle\par
+      \vskip3pt%
+      \textcolor{ptgreen}{\rule{1.5cm}{1.1pt}}\textcolor{ptrule}{\rule{\dimexpr\linewidth-1.5cm\relax}{0.5pt}}%
+    \end{minipage}%
+  \end{beamercolorbox}%
+  \vskip0.6em%
+}
+
+% ---------------------------------------------------------------- footline
+\setbeamertemplate{footline}{%
+  \hbox{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.4ex,dp=3.5ex,%
+        leftskip=0.9cm,rightskip=0.9cm]{footline}%
+      \usebeamerfont{footline}\insertshorttitle\hfill\insertframenumber%
+    \end{beamercolorbox}%
+  }%
+}
+
+% ---------------------------------------------------------------- bullets
+\setbeamertemplate{itemize item}{%
+  \raisebox{0.18ex}{\tikz\fill[ptgreen] (0,0) circle (1.5pt);}}
+\setbeamertemplate{itemize subitem}{%
+  \raisebox{0.18ex}{\tikz\draw[ptmuted,line width=0.6pt] (0,0) circle (1.3pt);}}
+\setbeamertemplate{enumerate item}{\color{ptgreen}\bfseries\insertenumlabel.}
+\setlength{\leftmargini}{1.1em}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamercolor{block title}{bg=ptpanel,fg=ptink}
+\setbeamercolor{block body}{bg=ptpanel!45,fg=ptink}
+
+% ---------------------------------------------------------------- title page
+\setbeamertemplate{title page}{%
+  \vskip0.6cm
+  {\scriptsize\color{ptmuted}\insertinstitute\par}
+  \vskip0.55cm
+  {\fontsize{34}{38}\selectfont\bfseries\color{ptink}\inserttitle\par}
+  \vskip0.30cm
+  {\large\color{ptgreen}\insertsubtitle\par}
+  \vskip0.85cm
+  \pttokenstrip
+  \vskip0.95cm
+  {\color{ptrule}\rule{\linewidth}{0.5pt}}
+  \vskip0.45cm
+  {\small\insertauthor\par}
+  \vskip0.40cm
+  {\scriptsize\color{ptmuted}\insertdate\par}
+}
+
+% ------------------------------------------------- section divider (full bleed)
+% \ptdivider{01}{Title}{one-line kicker}
+\newcommand{\ptdivider}[3]{%
+  \begingroup
+  \setbeamercolor{background canvas}{bg=ptdark}
+  \setbeamertemplate{footline}{}
+  \begin{frame}[plain]
+    \vfill
+    \hspace{0.6cm}%
+    \begin{minipage}{\dimexpr\textwidth-1.2cm\relax}
+      \RaggedRight
+      {\scriptsize\bfseries\color{ptgreen!75!white}PART #1\par}
+      \vskip0.30cm
+      {\fontsize{26}{30}\selectfont\bfseries\color{ptbg}#2\par}
+      \vskip0.28cm
+      {\small\color{ptbg!62!ptdark}#3\par}
+    \end{minipage}
+    \vfill
+  \end{frame}
+  \endgroup
+}
+
+% ------------------------------------------------- closing statement (full bleed)
+\newcommand{\ptstatement}[1]{%
+  \begingroup
+  \setbeamercolor{background canvas}{bg=ptdark}
+  \setbeamertemplate{footline}{}
+  \begin{frame}[plain]
+    \vfill
+    \hspace{0.9cm}%
+    \begin{minipage}{\dimexpr\textwidth-1.8cm\relax}
+      \RaggedRight
+      {\fontsize{20}{27}\selectfont\color{ptbg}#1\par}
+    \end{minipage}
+    \vfill
+  \end{frame}
+  \endgroup
+}
+
+% ---------------------------------------------------------------- helpers
+% figure caption: states the conclusion, not the chart type
+\newcommand{\ptcap}[1]{\par\vskip4pt%
+  \begin{center}\begin{minipage}{0.90\linewidth}%
+  {\footnotesize\color{ptmuted}\RaggedRight #1\par}%
+  \end{minipage}\end{center}}
+% a single large number with a label underneath
+\newcommand{\ptstat}[2]{%
+  \begin{minipage}[t]{\linewidth}\centering
+    {\fontsize{30}{32}\selectfont\bfseries\color{ptgreen}#1\par}
+    \vskip3pt{\footnotesize\color{ptmuted}#2\par}
+  \end{minipage}}
+% soft panel behind a short block of content
+\newcommand{\ptpanelbox}[1]{%
+  \begin{tikzpicture}
+    \node[fill=ptpanel,rounded corners=3pt,inner sep=8pt,
+          text width=\dimexpr\linewidth-20pt\relax,align=left]{#1};
+  \end{tikzpicture}}
+
+\newcommand{\ptsource}[1]{\par\vskip2pt{\scriptsize\color{ptmuted}#1\par}}
+
+% ---------------------------------------------------------------- tikz styles
+% NOTE: every parameterised style is defined HERE, never inside a frame.
+\tikzset{
+  ptnode/.style   ={rectangle,rounded corners=2.5pt,draw=ptrule,fill=white,
+                    line width=0.7pt,minimum width=2.4cm,minimum height=0.9cm,
+                    align=center,font=\small,text=ptink},
+  ptfrozen/.style ={ptnode,fill=ptpanel,draw=ptmuted!60,minimum width=2.8cm,
+                    minimum height=2.0cm},
+  pttuned/.style  ={ptnode,fill=ptgreen!12,draw=ptgreen,text=ptink},
+  ptghost/.style  ={ptnode,fill=ptbg,draw=ptrule,text=ptmuted},
+  ptchip/.style   ={rectangle,rounded corners=1.5pt,draw=ptgreen,fill=ptgreen!18,
+                    minimum width=0.42cm,minimum height=0.42cm,inner sep=0pt,
+                    font=\tiny,text=ptink},
+  ptslot/.style   ={rectangle,rounded corners=1.5pt,draw=ptrule,fill=white,
+                    minimum width=0.42cm,minimum height=0.42cm,inner sep=0pt,
+                    font=\tiny,text=ptmuted},
+  ptarrow/.style  ={-{Stealth[length=4pt,width=3pt]},line width=0.7pt,draw=ptmuted},
+  ptgrad/.style   ={-{Stealth[length=4pt,width=3pt]},line width=1.0pt,
+                    draw=ptgreen,dashed,dash pattern=on 3pt off 2pt},
+  ptlbl/.style    ={font=\scriptsize,text=ptmuted,align=center},
+  ptlblg/.style   ={font=\scriptsize\bfseries,text=ptgreen,align=center},
+}
+
+% ---------------------------------------------------------------- plot styles
+\pgfplotsset{
+  ptaxis/.style={
+    width=10.2cm, height=5.5cm,
+    axis background/.style={fill=ptbg},
+    axis line style={draw=ptrule,line width=0.6pt},
+    tick style={draw=ptrule},
+    tick label style={font=\scriptsize,text=ptmuted},
+    label style={font=\scriptsize,text=ptmuted},
+    grid=major,
+    grid style={draw=ptrule,dashed,line width=0.35pt},
+    tick align=outside,
+    clip=false,
+    legend style={draw=none,fill=none,font=\scriptsize,text=ptink},
+  },
+  ptlog/.style={
+    ptaxis,
+    log basis x=10,
+    xtick={1e8,1e9,1e10,1e11},
+    xticklabels={100M,1B,10B,100B},
+    xlabel={Model parameters},
+  },
+}
+\tikzset{
+  ptcurve/.style={line width=1.4pt,mark=*,mark size=1.7pt,
+                  mark options={fill=ptbg,line width=0.9pt}},
+  ptcurvedash/.style={ptcurve,dash pattern=on 4pt off 2.5pt},
+  ptend/.style={font=\scriptsize\bfseries,anchor=west,inner sep=2pt},
+}
+\endinput

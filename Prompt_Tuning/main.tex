@@ -1,0 +1,664 @@
+% =====================================================================
+%  Prompt Tuning -- Beamer deck
+%  main.tex        : content (this file)
+%  prompttheme.sty : palette, fonts, beamer templates, tikz/plot styles
+%  tikz.tex        : every diagram and chart, as a macro
+%
+%  Compile with pdfLaTeX, twice (Overleaf: Menu -> Compiler -> pdfLaTeX).
+%  Source paper: Lester, Al-Rfou & Constant (2021), arXiv:2104.08691.
+% =====================================================================
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage{prompttheme}   % <-- all styling lives here
+\usepackage{graphicx}
+\input{tikz.tex}           % <-- all drawings live here (before \begin{document})
+\centering
+\title{Prompt Tuning}
+\subtitle{Task Specific Prompt Learning\\[4pt]
+{\small CSE 200}}
+
+\institute{Department of Computer Science and Engineering, BUET}
+\author{\texorpdfstring{%
+  \mbox{\footnotesize
+  \textbf{2305068} Sk.\ Arib Rajin Shahan \hspace{0.3cm}
+  \textbf{2305075} Sadman Zaman \hspace{0.3cm}
+  \textbf{2305076} Fatin Nehal Zubaeer
+  }%
+}{Sk. Arib Rajin Shahan, Sadman Zaman, Fatin Nehal Zubaeer}}
+\date{}
+\titlegraphic{}
+
+% explicit PDF metadata (keeps hyperref from choking on markup in \author)
+\hypersetup{pdftitle={Prompt Tuning},
+            pdfauthor={Sk. Arib Rajin Shahan, Sadman Zaman, Fatin Nehal Zubaeer},
+            pdfsubject={Parameter-efficient prompt tuning}}
+
+% short title shown in the footer
+\newcommand{\shorttitleline}{Prompt Tuning}
+\renewcommand{\insertshorttitle}{\shorttitleline}
+
+\begin{document}
+
+% ===================================================== ACT I -- tension
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \titlepage
+\end{frame}}
+
+\ptdivider{1}{Introduction to Prompt Tuning}
+{Freeze the billions. Learn a handful of vectors and put them in front.}
+
+
+\begin{frame}{What is Prompt Tuning?}
+  \vfill
+  \begin{center}
+    \begin{minipage}{0.88\textwidth}
+      \large
+      \textbf{Prompt tuning} is the process of adapting LLMs to new tasks by
+      training a small set of parameters known as \HL{prompts}.
+
+      \vskip0.5cm
+
+      These prompts are \HL{prepended to the input text} to guide the LLM
+      towards generating the desired output.
+    \end{minipage}
+  \end{center}
+  \vfill
+\end{frame}
+
+
+\begin{frame}{Learn the prompt instead of writing it}
+  \vskip0.05cm
+  \small
+  \begin{columns}[T]
+    \column{0.54\textwidth}
+      Prompt tuning is a \HL{parameter-efficient fine-tuning} technique. It adapts a
+      large pretrained model to a new task \emph{without} updating its billions of
+      parameters.
+      \vskip0.35cm
+      Instead it learns a small set of trainable vectors, \HL{soft prompts}, or
+      virtual tokens inserted into the model's input space.
+    \column{0.42\textwidth}
+      \centering
+      \ptprompttuning
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Hard Prompts and Soft Prompts}
+  \vskip0.2cm
+  \centering
+  {\renewcommand{\arraystretch}{1.6}%
+  \begin{tabular}{@{}l l l@{}}
+    \toprule
+    & \small {\HL{Hard prompt}} & \small {\HL{Soft prompt}} \\
+    \midrule
+    Representation      & Human-written tokens            & Learnable vectors\\
+    Space  & Vocabulary space           & Embedding space \\
+    Optimization & Trail and error  & Gradient descent
+    \\
+    Readable        & Yes                        & No \\
+    Portable        & Across models              & Tied to model's embeddings \\
+    \bottomrule
+  \end{tabular}}
+  \ptcap{Soft prompts guide the model more reliably than hand-written text, and they
+         work well when training data is limited.}
+\end{frame}
+
+\begin{frame}{An analogy: the instruction we never have to write}
+  \vfill
+  \centering
+  \ptanalogy
+  \vfill
+  \ptcap{Show the model enough example poems and it learns the pattern, rhyme
+         scheme, metre, subject as numbers. The analogy holds for what the prompt
+         \emph{does}; the real vector has no fields you could read off like this.}
+\end{frame}
+
+
+\begin{frame}{Benefits of Prompt Tuning}
+
+  \begin{columns}[T,onlytextwidth]
+
+    % =========================================================
+    % Efficient
+    % =========================================================
+    \begin{column}{0.31\textwidth}
+
+      {\large\bfseries\HL{1. Efficient}}
+
+      \vspace{0.3 cm}
+
+      \small
+      Prompt tuning requires training only
+      a small number of prompt parameters, resulting in faster adaptation to new tasks.
+
+    \end{column}
+
+    % =========================================================
+    % Flexible
+    % =========================================================
+    \begin{column}{0.31\textwidth}
+
+      {\large\bfseries\HL{2. Flexible}}
+
+      \vspace{0.3cm}
+
+      \small
+      Prompt tuning can be applied to a wide range of tasks
+      in various domains, including natural language processing,
+      image classification, and code generation.
+
+    \end{column}
+
+    % =========================================================
+    % Interpretable
+    % =========================================================
+    \begin{column}{0.31\textwidth}
+
+      {\large\bfseries\HL{3. Interpretable}}
+
+      \vspace{0.3 cm}
+
+      \small
+      With prompt tuning, it is possible to inspect the prompt
+      parameters to understand how the LLM is being guided
+      towards generating the desired output.
+
+    \end{column}
+
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{Cycle of Prompt Tuning Benefits}
+  \vfill
+  \centering
+  \ptbenefitscycle
+  \vfill
+  
+\end{frame}
+
+\begin{frame}{Fine-Tuning Required a New Model for Every Task}
+  \vskip0.1cm
+  \centering
+  \ptfullfinetune
+  \vskip0.9cm
+  \begin{minipage}{0.85\textwidth}
+    \centering\footnotesize\color{ptink}
+    Fine-tuning adapts a pretrained model by updating all of its weights on a
+    single task's data. Once tuned, those weights are specialized to that task, they can't also serve another task well. So each new task requires its
+    own full copy of the model. For a model like T5-XXL, that means
+    duplicating all 11 billion parameters for every single task.
+  \end{minipage}
+\end{frame}
+% \begin{frame}{Writing a clever prompt is free, and 17.5 points worse}
+%   \vskip0.2cm
+%   \begin{columns}[T]
+%     \column{0.44\textwidth}
+%       \ptstat{71.8}{GPT-3 175B, few-shot prompt design}
+%       \vskip0.7cm
+%       \ptstat{89.3}{T5-XXL 11B, fully fine-tuned}
+%     \column{0.52\textwidth}
+%       \vskip0.6cm
+%       Prompt design keeps the model frozen --- exactly what we want --- but
+%       \begin{itemize}\itemsep4pt
+%         \item the task description is hand-written and error-prone,
+%         \item conditioning is capped by what fits in the input,
+%         \item and it loses to tuning despite $16\times$ the parameters.
+%       \end{itemize}
+%       \vskip0.35cm
+%       \HL{Question:} can a frozen model be conditioned by something we
+%       \emph{learn} instead of something we \emph{write}?
+%   \end{columns}
+%   \ptsource{SuperGLUE dev scores as reported in the paper.}
+% \end{frame}
+
+% ===================================================== ACT II -- the idea
+
+
+\ptdivider{2}{How a soft prompt is trained}{Optimizing Learnable Prompt Representations While Keeping the Base Model Frozen.}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Soft Prompt Training Workflow}
+  \vfill
+  \centering
+  \pttrainloop
+  \vfill
+  \ptcap{Soft prompt tuning follows the standard neural-network training loop. The fundamental difference is that only the soft prompt is updated, while the pretrained model remains unchanged.}
+\end{frame}
+
+
+\begin{frame}{Initialising the Soft Prompt}
+  \small
+  {\raggedright A soft prompt is a small set of learnable embedding vectors that are prepended to the input text.\par}
+  \vskip0.12cm
+  \begin{itemize}\itemsep2pt
+    \item \small Initialise the prompt with a small number of vectors
+    \item \small The vectors can be initialised using:
+      \begin{itemize}\itemsep1pt
+        \item \small random values
+        \item \small existing token embeddings
+        \item \small sampled vocabulary embeddings
+      \end{itemize}
+    \item \small The pretrained model parameters remain \HL{frozen}
+  \end{itemize}
+  \vskip0.7cm
+  \centering
+  \resizebox{!}{1.6cm}{\ptsoftpromptinit}
+  \vskip0.05cm
+  % \ptcap{\textbf{Key takeaway:} the soft prompt starts as a set of learnable
+  %        parameters and gradually acquires task-specific information during
+  %        training.}
+\end{frame}
+
+
+\begin{frame}{Forward Pass and Cross-Entropy Loss}
+  \small
+  {\raggedright The soft prompt is combined with the input text and passed through the pretrained model.\par}
+  
+  \vskip0.12cm
+  \begin{itemize}\itemsep4pt
+    \item \small The model processes the \HL{soft prompt + input text}
+    \item \small The model parameters are not modified
+    \item \small The model produces a prediction
+    \item \small \HL{Cross-entropy loss} measures the difference between the prediction and the target output
+  \end{itemize}
+  \vskip0.4cm
+  \centering
+   \resizebox{0.85\textwidth}{!}{\ptforwardloss}
+  \vskip0.1cm
+  % \ptcap{The loss tells us how effectively the current soft prompt is steering the model toward the desired output.}
+\end{frame}
+
+
+\begin{frame}{Backpropagation and Prompt Optimization}
+  
+  {\raggedright The loss is backpropagated through the entire network to determine how the soft prompt contributed to the error.\par}
+  
+  \vskip0.12cm
+  \begin{itemize}\itemsep4pt
+    \item  \HL{Gradients} are computed through the frozen model
+    \item  The model weights remain unchanged
+    \item  The optimizer uses the gradient with respect to the soft prompt
+    \item  Only the \HL{soft-prompt parameters} are updated
+  \end{itemize}
+  \vskip0.3cm
+  \centering
+  \resizebox{0.92\textwidth}{!}{\ptbackpropupdate}
+  \vskip0.1cm
+  % {\raggedright \footnotesize The gradient travels back through the frozen network, but only the soft prompt receives the update.\par}
+  
+\end{frame}
+% ---------------------------------------------------------------------
+
+
+
+% ---------------------------------------------------------------------
+
+
+\ptdivider{3}{When Prompt Tuning Fits}{Efficiently adapting pretrained models to new tasks with minimal parameter updates.}
+
+\begin{frame}{Choosing Between Prompt Tuning and Fine Tuning}
+  \vskip0.2cm
+  \small
+  Prompt tuning sits in between prompt engineering and full fine tuning: it buys
+  \HL{behavioural consistency} without the full cost of updating every weight.
+  \vskip0.9cm
+  \centering
+  \ptspectrum
+\end{frame}
+
+\begin{frame}{When to Reach for Prompt Tuning}
+  % \vskip0.3cm
+  % \HL{\large Prompt tuning fits when\dots}
+  % \vskip0.2cm
+  \begin{itemize}\itemsep11pt
+    \item \HL{Parameter efficiency:} Adapt the model by training only a small set of prompt parameters.
+    \item \HL{Task adaptation:} Useful for adapting a pretrained model to a specific downstream task.
+    \item \HL{Multiple tasks:} Effective when maintaining separate lightweight task-specific configurations.
+    \item \HL{Preserve the base model:} Suitable when we want to keep the original model unchanged.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{When to Reach for Full Fine Tuning}
+  \begin{itemize}\itemsep11pt
+    \item \HL{Domain specialisation:} Adapt the model to a specific domain, industry, or knowledge area
+    \item \HL{Complex tasks:} Best for tasks requiring deeper changes to the model's behaviour or capabilities
+    \item \HL{Large labelled datasets:} More suitable when substantial task-specific training data is available
+    \item \HL{Higher performance:} Use when maximising task-specific accuracy matters more than training cost
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fine Tuning and Prompt Tuning: A Comparative Study}
+  \vskip0.1cm
+  \begin{columns}[c]
+    \column{0.20\textwidth}
+    \hspace{0.8cm}%
+      \small
+      \mbox{\ptdot{ptorange}\ Fine Tuning}
+      \vskip0.45cm
+      \mbox{\ptdot{ptslate}\ Prompt Tuning}
+    \column{0.78\textwidth}
+      \centering
+      \resizebox{!}{5.4cm}{\ptradar}
+  \end{columns}
+  \vskip0.15cm
+  % \ptcap{Fine-tuning trades speed for depth: it demands more data and rewrites the
+  %        model itself, which is exactly why it wins on output quality and model
+  %        modification. Prompt tuning stays fast and flexible precisely because it
+  %        leaves the base model untouched --- the cost of that speed shows up as a
+  %        lower ceiling on quality and control.}
+\end{frame}
+
+
+\ptdivider{4}{Worked Example}{Prompt tuning a frozen model, one gradient step at a time.}
+
+\begin{frame}{The Scenario}
+
+  \big A pretrained model already understands English fluently. We want it to classify
+  movie reviews as \HL{Positive} or \HL{Negative} without touching a single one
+  of its weights. 
+  \vskip0.3cm
+  
+  \centering
+  \resizebox{0.92\textwidth}{!}{\ptwexscenario}
+  \vskip0.1cm
+% \centering
+
+%   \ptcap{We will freeze the entire model and train only a small soft prompt.}
+\end{frame}
+
+\begin{frame}{Step 1: Defining the Training Task}
+  \small
+  A handful of labelled examples is enough to start.
+  \vskip0.5cm
+  \centering
+  {\renewcommand{\arraystretch}{1.5}%
+  \begin{tabular}{@{}l l@{}}
+    \toprule
+    \small Input & \small Target \\
+    \midrule
+    The movie was fantastic.      & \HL {Positive} \\
+    The acting was terrible.      & \HLred{Negative} \\
+    I really enjoyed this film.   & \HL{Positive} \\
+    The story was boring.         & \HLred{Negative} \\
+    \bottomrule
+  \end{tabular}}
+  \vskip0.3cm
+  \ptcap{The model already knows language -- we only need to teach it how to use that
+         knowledge for sentiment.}
+\end{frame}
+
+\begin{frame}{Step 2: Create the Soft Prompt}
+
+  We use \HL{3 soft-prompt tokens}: $P=[p_1,p_2,p_3]$, initialised as random vectors
+  in the model's embedding space, not words.
+  \vskip0.8cm
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptwexinit}
+  % \vskip0.1cm
+  % \ptcap{$p_1,p_2,p_3$ are learnable vectors, prepended to the real input tokens.}
+\end{frame}
+
+\begin{frame}{Step 3: Freeze the Pretrained Model}
+  \small
+  The pretrained model's weights, $\theta$, remain \HL{completely frozen}
+  throughout training, preserving everything it learned during pretraining.
+  Only the soft-prompt parameters $P=[p_1,p_2,p_3]$ are trainable and
+  updated during optimisation.
+  \vskip0.5cm
+  \centering
+  \resizebox{0.3\textwidth}{!}{\ptwexfreeze}
+  \vskip0.15cm
+  
+\end{frame}
+
+\begin{frame}{Step 4: Forward Pass}
+  \small
+  The soft prompt is prepended to the input and passed through the
+  \HL{frozen model} to produce a prediction. The prediction is only used to compute the loss next.
+  \vskip0.15cm
+  \begin{itemize}\itemsep2pt
+    \item \small Input: $[p_1,p_2,p_3]$ + ``The movie was fantastic.''
+    \item \small Predicted: Positive $0.40$, Negative $0.60$
+    \item \small But the correct answer is \HL{Positive} -- the model is current making a wrong decision
+  \end{itemize}
+  % \vskip0.25cm
+  % \centering
+  % \resizebox{0.4\textwidth}{!}{\ptwexforward}
+\end{frame}
+
+\begin{frame}{An Incorrect Initial Prediction}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptwexforward}
+  \vfill
+  % \ptcap{The frozen model made a real prediction from the soft prompt alone --
+  %        it just steered toward the wrong class. That gap is exactly what the
+  %        loss will measure next.}
+\end{frame}
+
+\begin{frame}{Step 5: Calculate the Loss}
+  \small
+  {\raggedright We use cross-entropy loss. The correct class is \\Positive,
+  whose predicted probability was $0.40$.\par}
+
+  \vskip0.3cm
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+      \small
+      \begin{itemize}\itemsep6pt
+        \item \small $L = -\log(p_{\text{correct}})$
+        \item \small $L = -\log(0.40) = -(-0.9163)$
+        \item \small $L \approx \HL{0.916}$
+      \end{itemize}
+    \column{0.44\textwidth}
+      \centering
+      \vspace{-0.9cm}%
+      \resizebox{0.6\linewidth}{!}{\ptwexloss}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Step 6: Backpropagation}
+  \small
+  {\raggedright The loss is backpropagated through the entire \\network to determine how each soft-prompt \\vector contributed to the error.\par}
+  \vskip0.25cm
+  \begin{columns}[T]
+    \column{0.56\textwidth}
+      \small
+      \hspace{0.3cm}\(\nabla_P L = \dfrac{\partial L}{\partial P}\)
+      \vskip0.25cm
+      \begin{itemize}\itemsep5pt
+        \item \footnotesize Gradients are computed through the frozen model
+        \item \footnotesize $\theta_{\text{model}} \to$ frozen, $\quad P \to$ trainable
+        \item \footnotesize Only $\nabla_P L$, the gradient with respect to\ $P$, is kept
+      \end{itemize}
+      \vskip0.2cm
+      \footnotesize For our example: $\nabla_P L \approx [\,0.20,\ -0.10,\ 0.30\,]$
+    \column{0.40\textwidth}
+      \centering
+      \vspace{-1.1cm}%
+      \resizebox{0.62\linewidth}{!}{\ptwexbackprop}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Step 7: Update the Soft Prompt}
+  \small
+  \noindent With learning rate $\eta = 0.1$, the optimizer moves $P$ in the
+  direction that \HL{reduces the loss}:\par
+  \vskip0.4cm
+  \noindent $P_{\text{new}} = P_{\text{old}} - \eta \nabla_P L
+    \qquad\Longrightarrow\qquad
+    P_{\text{new}} = P_{\text{old}} +
+    \begin{bmatrix} -0.02 \\ +0.01 \\ -0.03 \end{bmatrix}$
+  \vskip0.3cm
+  \begin{itemize}\itemsep4pt
+    \item \small $p_1$ moves by $-0.02$
+    \item \small $p_2$ moves by $+0.01$
+    \item \small $p_3$ moves by $-0.03$
+  \end{itemize}
+  \vskip0.15cm
+
+  
+  \vskip0.2cm
+  \raggedright{\ptcap{The minus sign moves $P$ toward lower loss, not higher. Only the soft prompt moves in embedding space; the pretrained
+         model remains completely frozen.}\par}
+\end{frame}
+\begin{frame}{Steps 8 \& 9: Repeat and Learn}
+  \small
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{\HL{Step 8: Repeat the Steps}}
+      \vskip0.15cm
+      {\raggedright \small After updating the soft prompt, we move to the
+      next example. The same cycle repeats:
+      forward pass through the frozen model, loss against the target,
+      backpropagation to find how $P$ should change.\par}
+      
+
+    \column{0.48\textwidth}
+      \textbf{\HL{Step 9: The Prompt Learns}}
+      \vskip0.15cm
+      {\raggedright \small Initially, $P$ holds random vectors, so the
+      model produces incorrect predictions and \HLred{high loss}. As
+      gradient updates accumulate, these vectors are gradually shaped
+      into a useful, task-specific representation.\par}
+      
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Workflow 1: \HL{Define the Training Task}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowfirst{Define Training Dataset}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 2: \HL{Initialise the Soft Prompt}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Define Training Dataset}{Amalgamate Soft Prompt}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 3: \HL{Freeze the Pretrained Model}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Amalgamate Soft Prompt}{Stagnate Model Parameters}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 4: \HL{Forward Pass}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Stagnate Model Parameters}{Generate Model Prediction}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 5: \HL{Compute the Loss}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Generate Model Prediction}{Calculate Prediction Error}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 6: \HL{Backpropagation}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Calculate Prediction Error}{Propagate Gradients}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 7: \HL{Update the Soft Prompt}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowstep{Propagate Gradients}{Secure Task Specific Prompt}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Workflow 8: T\HL{he Prompt Learns}}
+  \vfill
+  \centering
+  \resizebox{0.55\textwidth}{!}{\ptflowlast{Secure Task Specific Prompt}{Adapt to the Task}}
+  \vfill
+\end{frame}
+
+\ptdivider{5}{Overcoming Challenges}{Practical techniques for writing prompts the model can actually follow.}
+
+\begin{frame}{Approaching Challenges}
+  \small
+  \begin{itemize}\itemsep8pt
+    \item \small \HL{Identify the core request:} Begin by pinning down the primary
+      question or action you need from the model.
+    \item \small \HL{Break it down:} If the prompt contains multiple parts, split it
+      into smaller, focused components, one task per piece.
+    \item \small \HL{Prioritize information:} Decide which details are essential
+      and which are secondary; keep the prompt focused on the essentials.
+    \item \small \HL{Use clear language:} Avoid jargon, ambiguous terms, or overly
+      technical phrasing -- write so anyone could follow it.
+    \item \small \HL{Remove unnecessary information:} Strip out context, backstory,
+      or details that don't directly serve the core request.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Approaching Challenges}
+  \small
+  \begin{itemize}\itemsep8pt
+    \item \small \HL{Restructure the prompt:} Reorganize simplified components into
+      a clear, concise prompt -- bullet points or numbered lists help
+      separate distinct tasks.
+    \item \small \HL{Avoid double negatives:} Complex negations confuse the model,
+      state what is required using positive language instead.
+    \item \small \HL{Specify constraints:} If there are topics or references to
+      avoid, state them explicitly in the prompt.
+    \item \small \HL{Provide context:} Include context where it is genuinely needed
+      so the model understands the background of the request.
+    \item \small \HL{Test for clarity:} Have someone else review the
+      prompt -- those questions reveal what still needs simplifying. Split
+      long, convoluted asks into separate prompts rather than one dense one.
+  \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}{References}
+  \small
+  \begin{thebibliography}{9}
+    \setbeamertemplate{bibliography item}[text]
+    \bibitem{lester2021} B.~Lester, R.~Al-Rfou, N.~Constant.
+      \emph{The Power of Scale for Parameter-Efficient Prompt Tuning.} EMNLP 2021.
+    \bibitem{li2021} X.~L.~Li, P.~Liang.
+      \emph{Prefix-Tuning: Optimizing Continuous Prompts for Generation.} ACL 2021.
+    \bibitem{brown2020} T.~Brown et al.
+      \emph{Language Models are Few-Shot Learners.} NeurIPS 2020.
+    \bibitem{raffel2020} C.~Raffel et al.
+      \emph{Exploring the Limits of Transfer Learning with a Unified Text-to-Text
+      Transformer.} JMLR 2020.
+    \bibitem{houlsby2019} N.~Houlsby et al.
+      \emph{Parameter-Efficient Transfer Learning for NLP.} ICML 2019.
+    \bibitem{hambardzumyan2021} K.~Hambardzumyan, H.~Khachatrian, J.~May.
+      \emph{WARP: Word-level Adversarial ReProgramming.} ACL 2021.
+  \end{thebibliography}
+\end{frame}
+
+\begingroup
+\setbeamercolor{background canvas}{bg=ptdark}
+\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \begin{center}
+    \vfill
+    {\scriptsize\bfseries\color{ptgreen!75!white}CONCLUSION\par}
+    \vskip0.30cm
+    {\fontsize{34}{38}\selectfont\bfseries\color{ptbg}Thank You\par}
+    \vfill
+  \end{center}
+\end{frame}
+\endgroup
+% ===================================================== backup
+\appendix
+
+
+
+\end{document}
