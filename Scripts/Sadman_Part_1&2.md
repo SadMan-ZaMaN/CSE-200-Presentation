@@ -13,7 +13,7 @@ But what if we want to improve performance of pre trained LLMs to address a spec
 but there is a simpler and far more efficient technique that has emerged in place of fine tuning.
 
 
-
+                                 and that technique is :
                          			Prompt Tuning
 
 
@@ -110,7 +110,7 @@ iii. And it's also Interpretable.. It allows researchers to inspect prompt param
 
 
 
-
+Low Storage Footprint: Instead of saving gigabytes of weight files for every task, soft prompts require only kilobytes of storage.
 
 
 
