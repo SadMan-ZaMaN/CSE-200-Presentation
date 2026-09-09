@@ -166,21 +166,19 @@
     \end{column}
 
     % =========================================================
-    % Interpretable
+    % Low Storage Footprint
     % Fully visible from Slide 3 onward
     % Transparent on Slides 1 and 2
     % =========================================================
     \begin{column}{0.31\textwidth}
 
       \uncover<3->{%
-        {\large\bfseries\HL{3. Interpretable}}
+        {\large\bfseries\HL{3. Low Storage Footprint}}
 
         \vspace{0.3cm}
 
         \small
-        With prompt tuning, it is possible to inspect the prompt
-        parameters to understand how the LLM is being guided
-        towards generating the desired output.
+        Instead of saving gigabytes of weight files for every task, soft prompts require only kilobytes of storage, avoiding full model duplication.
       }
 
     \end{column}
@@ -440,7 +438,7 @@
   \begin{itemize}\itemsep2pt
     \item \small Input: $[p_1,p_2,p_3]$ + ``The movie was fantastic.''
     \item \small Predicted: Positive $0.40$, Negative $0.60$
-    \item \small But the correct answer is \HL{Positive} -- the model is current making a wrong decision
+    \item \small But the correct answer is \HL{Positive} -- the model is currently making a wrong decision
   \end{itemize}
   % \vskip0.25cm
   % \centering
@@ -647,6 +645,8 @@
 
 \end{frame}
 
+\ptdivider{5}{Workflow}{From initialization to adaptation, let’s see how the prompt learns.}
+
 \begin{frame}{Workflow 1: \HL{Define the Training Task}}
   \vfill
   \centering
@@ -703,7 +703,7 @@
   \vfill
 \end{frame}
 
-\ptdivider{5}{Overcoming Challenges}{Practical techniques for writing prompts the model can actually follow.}
+\ptdivider{6}{Overcoming Challenges}{Practical techniques for writing prompts the model can actually follow.}
 
 \begin{frame}{Approaching Challenges}
   \small
