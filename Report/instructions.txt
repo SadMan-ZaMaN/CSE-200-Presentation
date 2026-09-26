@@ -1,0 +1,3 @@
+We are keeping the report structure, organization, and content open-ended. That means you have full freedom to be creative with the organization of sections and content. However, the report should reflect the principles and best practices of technical writing with appropriate figures, tables, mathematical terms, and equations.
+
+Only one member per group should submit the report to avoid duplicates.
