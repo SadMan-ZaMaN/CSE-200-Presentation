@@ -1,0 +1,454 @@
+% =====================================================================
+%  figures.tex -- every TikZ / pgfplots drawing in the report, one macro
+%  per figure. Node styles follow the presentation deck
+%  (B1-Group4/prompttheme.sty) so the report and the slides look related.
+%
+%  This file is read by all-figures.tex, which draws every figure once
+%  into all-figures.pdf. main.tex normally includes that PDF instead of
+%  drawing live, which keeps the compile fast enough for Overleaf's free
+%  plan. After editing a drawing here, recompile all-figures.tex.
+%  Needs tikz, pgfplots and palette.tex loaded first.
+% =====================================================================
+
+% ---------- Node and arrow styles ----------
+\tikzset{
+  ptnode/.style  ={rectangle, rounded corners=2.5pt, draw=ptrule, fill=white,
+                   line width=0.7pt, minimum width=2.4cm, minimum height=0.9cm,
+                   align=center, font=\small, text=ptink},
+  ptfrozen/.style={ptnode, fill=ptpanel, draw=ptmuted!60},
+  pttuned/.style ={ptnode, fill=ptgreen!12, draw=ptgreen},
+  pthot/.style   ={ptnode, fill=ptorange!12, draw=ptorange},
+  ptghost/.style ={ptnode, fill=ptbg, draw=ptrule, text=ptmuted},
+  ptchip/.style  ={rectangle, rounded corners=1.5pt, draw=ptgreen, fill=ptgreen!18,
+                   minimum width=0.5cm, minimum height=0.5cm, inner sep=0pt,
+                   font=\scriptsize, text=ptink},
+  ptslot/.style  ={rectangle, rounded corners=1.5pt, draw=ptmuted!70, fill=white,
+                   minimum width=0.5cm, minimum height=0.5cm, inner sep=0pt,
+                   font=\scriptsize, text=ptmuted},
+  ptarrow/.style ={-{Stealth[length=5pt,width=4pt]}, line width=0.8pt, draw=ptmuted},
+  ptgrad/.style  ={-{Stealth[length=5pt,width=4pt]}, line width=1.0pt, draw=ptgreen,
+                   dash pattern=on 3pt off 2pt},
+  ptlbl/.style   ={font=\footnotesize, text=ptmuted, align=center},
+  ptlblg/.style  ={font=\footnotesize\bfseries, text=ptgreen, align=center},
+}
+
+% Small snowflake that marks a frozen component.
+\newcommand{\ptsnow}[1]{%
+  \begin{scope}[shift={#1}]
+    \foreach \a in {0,60,120}{%
+      \draw[line width=0.7pt, draw=ptblue] (\a:0.14) -- (\a+180:0.14);}
+  \end{scope}}
+
+
+% =====================================================================
+%  Figure: serving several tasks -- model tuning vs prompt tuning
+%  (after Figure 2 of Lester et al., 2021)
+% =====================================================================
+\newcommand{\figservingcompare}{%
+\begin{tikzpicture}
+  % ---------------- model tuning ----------------
+  \node[font=\small\bfseries, text=ptorange] at (2.2,2.3) {Model tuning};
+  \foreach \t/\y in {A/1.25, B/0, C/-1.25}{
+    \node[ptghost, minimum width=1.5cm, minimum height=0.75cm, font=\footnotesize]
+      (b\t) at (0.55,\y) {Task \t\\[-3pt]batch};
+    \node[pthot, minimum width=2.6cm, minimum height=0.8cm, font=\footnotesize]
+      (m\t) at (3.5,\y) {Task \t{} model\\[-3pt]11B parameters};
+    \draw[ptarrow] (b\t.east) -- (m\t.west);
+  }
+  \node[ptlbl, anchor=north] at (2.2,-1.85)
+    {one model copy and\\one batch per task};
+  % ---------------- divider ----------------
+  \draw[ptrule, dashed, line width=0.8pt] (5.4,-2.75) -- (5.4,2.55);
+  % ---------------- prompt tuning ----------------
+  \node[font=\small\bfseries, text=ptgreen] at (8.6,2.3) {Prompt tuning};
+  \node[ptghost, minimum width=2.1cm, minimum height=2.9cm] (mix) at (6.95,0) {};
+  \foreach \t/\y/\col in {A/0.9/ptgreen, C/0.3/ptgold, B/-0.3/ptblue, A/-0.9/ptgreen}{
+    \node[rectangle, rounded corners=1.2pt, draw=\col, fill=\col!20,
+          minimum width=0.45cm, minimum height=0.4cm, inner sep=0pt,
+          font=\scriptsize\bfseries, text=\col] at (6.4,\y) {\t};
+    \node[rectangle, rounded corners=1.2pt, draw=ptmuted!60, fill=white,
+          minimum width=1.05cm, minimum height=0.4cm, inner sep=0pt,
+          font=\scriptsize, text=ptmuted] at (7.25,\y) {input};
+  }
+  \node[ptfrozen, minimum width=2.7cm, minimum height=2.9cm, font=\footnotesize]
+       (fm) at (10.25,0)
+       {Pretrained model\\11B parameters\\[3pt]\textbf{frozen, shared}};
+  \ptsnow{(10.25,-1.05)}
+  \draw[ptarrow] (mix.east) -- (fm.west);
+  \node[ptlbl, anchor=north] at (6.95,-1.5) {mixed-task batch};
+  \node[ptlbl, anchor=north] at (8.75,-2.05)
+    {one shared model; each task adds only its\\
+     prompt ($20{,}480$ parameters when $m=5$)};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: hard prompt vs learned soft prompt
+% =====================================================================
+\newcommand{\figanalogy}{%
+\begin{tikzpicture}
+  \node[ptnode, text width=4.6cm, minimum height=2.0cm, align=left, font=\small]
+       (a) at (0,0)
+       {Classify the sentiment of this movie review as \emph{positive} or \emph{negative}:};
+  \node[ptlbl, anchor=south] at (a.north) {hard prompt: text a person writes};
+  \node[pttuned, minimum height=2.0cm, font=\scriptsize] (b) at (7.1,0)
+       {\renewcommand{\arraystretch}{1.25}%
+        \begin{tabular}{@{}l@{\hspace{8pt}}rrrr@{}}
+          $p_1$ & $0.14$ & $-0.72$ & $0.31$ & $0.08$\\
+          $p_2$ & $-0.45$ & $0.19$ & $0.66$ & $-0.27$\\
+          $p_3$ & $0.52$ & $-0.11$ & $0.03$ & $0.94$
+        \end{tabular}};
+  \node[ptlblg, anchor=south] at (b.north) {soft prompt: vectors training learns};
+  \draw[ptarrow] (a.east) -- (b.west) node[midway, above, ptlbl] {replaced by};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: prompt-tuning architecture, forward and backward paths
+% =====================================================================
+\newcommand{\figarchitecture}{%
+\begin{tikzpicture}
+  % ---- frozen transformer ----
+  \node[ptfrozen, minimum width=8.2cm, minimum height=1.35cm, font=\small]
+       (lm) at (0.4,2.5)
+       {Pretrained Transformer $f_\theta$\\[1pt]
+        {\footnotesize\bfseries frozen: the weights $\theta$ are never updated}};
+  \ptsnow{(4.1,2.5)}
+  % ---- output ----
+  \node[ptnode, minimum width=4.2cm, minimum height=0.7cm, font=\footnotesize]
+       (out) at (0.4,4.25) {output $Y$, scored against the target};
+  \draw[ptarrow] (lm.north) -- (out.south);
+  % ---- soft prompt P ----
+  \foreach \i in {1,...,4}{
+    \node[ptchip, minimum width=0.62cm, minimum height=0.62cm]
+         (p\i) at ({-3.7+0.8*\i},0.55) {$p_{\i}$};}
+  % ---- input embeddings ----
+  \foreach \i/\w in {1/The, 2/movie, 3/was, 4/great}{
+    \node[ptslot, minimum width=0.62cm, minimum height=0.62cm]
+         (x\i) at ({0.8+0.8*\i},0.55) {};
+    \node[font=\scriptsize\itshape, text=ptmuted] (w\i) at ({0.8+0.8*\i},-0.45) {\w};
+    \draw[ptarrow, line width=0.5pt] (w\i.north) -- (x\i.south);
+  }
+  \node[draw=ptgreen, rounded corners=3pt, dashed, fit=(p1)(p4), inner sep=4pt] (P) {};
+  \node[draw=ptmuted!70, rounded corners=3pt, dashed, fit=(x1)(x4), inner sep=4pt] (X) {};
+  \node[ptlblg, anchor=north] at (-1.7,-0.1)
+       {soft prompt $P\in\mathbb{R}^{m\times d}$\\[-1pt]{\normalfont trainable}};
+  \node[ptlbl, anchor=north] at (2.8,-0.75)
+       {input embeddings $E(X)\in\mathbb{R}^{n\times d}$\\[-1pt]frozen lookup};
+  % ---- forward pass ----
+  \draw[ptarrow] (P.north) -- (P.north |- lm.south);
+  \draw[ptarrow] (X.north) -- (X.north |- lm.south);
+  \node[ptlbl, fill=white, inner sep=1.5pt] at (0.55,1.38)
+       {$[P;E(X)]\in\mathbb{R}^{(m+n)\times d}$};
+  % ---- backward pass: gradient reaches P only ----
+  \draw[ptgrad] (out.west) -- (-4.55,4.25) -- (-4.55,0.55) -- (P.west);
+  \node[ptlblg, rotate=90, anchor=south] at (-4.55,2.4) {gradient $\nabla_P\mathcal{L}$};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: task-specific parameters versus model size (log-log)
+%  Data: Table 4 of Lester et al. (2021); prompt cost = m * d.
+% =====================================================================
+\newcommand{\figparams}{%
+\begin{tikzpicture}
+\begin{axis}[
+  width=12.2cm, height=6.6cm,
+  xmode=log, ymode=log,
+  xmin=5e7, xmax=2.4e10, ymin=1e3, ymax=3e11,
+  xtick={76961152,247577856,783150080,2849757184,11135332352},
+  xticklabels={Small\\77M, Base\\248M, Large\\783M, XL\\2.85B, XXL\\11.1B},
+  xticklabel style={align=center, font=\scriptsize},
+  yticklabel style={font=\scriptsize},
+  ytick={1e3,1e5,1e7,1e9,1e11},
+  xlabel={T5.1.1 model size (frozen parameters)},
+  ylabel={task-specific parameters},
+  label style={font=\footnotesize},
+  axis line style={draw=ptmuted!70},
+  tick style={draw=ptmuted!70},
+  grid=major, grid style={draw=ptrule!70, dashed, line width=0.3pt},
+  legend style={at={(0.5,1.03)}, anchor=south, draw=none, fill=none,
+                font=\scriptsize, /tikz/every even column/.append style={column sep=10pt}},
+  legend columns=3,
+  legend cell align=left,
+  clip=false,
+]
+  \addplot[ptorange, line width=1.3pt, mark=square*, mark size=1.8pt] coordinates
+    {(76961152,76961152) (247577856,247577856) (783150080,783150080)
+     (2849757184,2849757184) (11135332352,11135332352)};
+  \addlegendentry{Model tuning (all weights)}
+  \addplot[ptgreen, line width=1.3pt, mark=*, mark size=1.8pt] coordinates
+    {(76961152,51200) (247577856,76800) (783150080,102400)
+     (2849757184,204800) (11135332352,409600)};
+  \addlegendentry{Prompt tuning, $m=100$ (default)}
+  \addplot[ptgreen, line width=1.2pt, dashed, mark=o, mark size=1.8pt,
+           mark options={solid, fill=white}] coordinates
+    {(76961152,2560) (247577856,3840) (783150080,5120)
+     (2849757184,10240) (11135332352,20480)};
+  \addlegendentry{Prompt tuning, $m=5$}
+  \draw[{Stealth[length=4pt]}-{Stealth[length=4pt]}, ptmuted, line width=0.7pt]
+       (axis cs:1.55e10,409600) -- (axis cs:1.55e10,11135332352)
+       node[midway, right, font=\scriptsize, text=ptink, align=left]
+       {$\approx 27{,}000\times$\\fewer};
+\end{axis}
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: training workflow (setup, loop, output)
+% =====================================================================
+\newcommand{\figworkflow}{%
+\begin{tikzpicture}[font=\footnotesize]
+  % ---- setup ----
+  \node[ptghost, text=ptink, minimum width=2.7cm, minimum height=0.8cm, font=\footnotesize]
+       (s1) at (0,1.2) {\textbf{1} Define the task\\[-2pt]and labeled data};
+  \node[pttuned, minimum width=2.7cm, minimum height=0.8cm, font=\footnotesize]
+       (s2) at (0,0) {\textbf{2} Initialize the\\[-2pt]soft prompt $P$};
+  \node[ptfrozen, minimum width=2.7cm, minimum height=0.8cm, font=\footnotesize]
+       (s3) at (0,-1.2) {\textbf{3} Freeze the\\[-2pt]model weights $\theta$};
+  \draw[ptarrow] (s1) -- (s2);
+  \draw[ptarrow] (s2) -- (s3);
+  \node[draw=ptrule, rounded corners=6pt, dashed, fit=(s1)(s2)(s3), inner sep=6pt,
+        label={[ptlbl]above:setup}] (setup) {};
+  % ---- training loop ----
+  \node[ptnode, minimum width=2.8cm, minimum height=0.8cm, font=\footnotesize]
+       (s4) at (4.2,0.95) {\textbf{4} Forward pass\\[-2pt]on $[P;E(X)]$};
+  \node[ptnode, minimum width=2.8cm, minimum height=0.8cm, font=\footnotesize]
+       (s5) at (7.7,0.95) {\textbf{5} Cross-entropy\\[-2pt]loss $\mathcal{L}$};
+  \node[ptnode, minimum width=2.8cm, minimum height=0.8cm, font=\footnotesize]
+       (s6) at (7.7,-0.95) {\textbf{6} Backpropagate\\[-2pt]to get $\nabla_P\mathcal{L}$};
+  \node[pttuned, minimum width=2.8cm, minimum height=0.8cm, font=\footnotesize]
+       (s7) at (4.2,-0.95) {\textbf{7} Update $P$ only\\[-2pt]$P\leftarrow P-\eta\nabla_P\mathcal{L}$};
+  \draw[ptarrow] (s4) -- (s5);
+  \draw[ptarrow] (s5) -- (s6);
+  \draw[ptgrad]  (s6) -- (s7);
+  \draw[ptarrow] (s7) -- (s4);
+  \node[ptlbl, font=\scriptsize] at (5.95,0) {repeat for\\[-2pt]each mini-batch};
+  \node[draw=ptrule, rounded corners=6pt, dashed, fit=(s4)(s5)(s6)(s7), inner sep=6pt,
+        label={[ptlbl]above:training loop}] (loop) {};
+  \draw[ptarrow] (setup.east) -- (loop.west);
+  % ---- output ----
+  \node[pttuned, minimum width=2.4cm, minimum height=1.2cm, font=\footnotesize]
+       (s8) at (12.4,0) {\textbf{8} Store the task\\[-2pt]prompt $P^{\star}$\\[-2pt](kilobytes)};
+  \draw[ptarrow] (loop.east) -- (s8.west)
+       node[midway, above=1pt, ptlbl, font=\scriptsize] {converged};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure (a): worked example -- forward pass and backward signal
+% =====================================================================
+\newcommand{\figexampleforward}{%
+\begin{tikzpicture}
+  \foreach \i in {1,2,3}{
+    \node[ptchip, minimum width=0.6cm, minimum height=0.6cm]
+         (p\i) at ({-3.0+0.72*(\i-1)},3.3) {$p_{\i}$};}
+  \node[ptghost, minimum height=0.6cm, minimum width=0pt, inner xsep=5pt, font=\footnotesize]
+       (inp) at (1.15,3.3) {``The movie was fantastic.''};
+  \node[ptfrozen, minimum width=5.4cm, minimum height=0.9cm, font=\small]
+       (lm) at (-0.3,2.0) {Frozen model $f_\theta$};
+  \ptsnow{(2.05,2.0)}
+  \draw[ptarrow] (-0.3,2.97) -- (lm.north);
+  \draw[ptarrow] (lm.south) -- (-0.3,1.12);
+  % probability bars: probability 1.0 = 3.5 cm
+  \node[anchor=east, font=\footnotesize] at (-1.6,0.8) {Positive};
+  \fill[ptgreen!40] (-1.5,0.62) rectangle ++(1.4,0.36);
+  \draw[ptgreen, line width=0.6pt] (-1.5,0.62) rectangle ++(1.4,0.36);
+  \node[anchor=west, font=\footnotesize] at (-0.05,0.8)
+       {$0.40$ \textcolor{ptgreen}{(target)}};
+  \node[anchor=east, font=\footnotesize] at (-1.6,0.25) {Negative};
+  \fill[ptred!35] (-1.5,0.07) rectangle ++(2.1,0.36);
+  \draw[ptred, line width=0.6pt] (-1.5,0.07) rectangle ++(2.1,0.36);
+  \node[anchor=west, font=\footnotesize] at (0.65,0.25)
+       {$0.60$ \textcolor{ptred}{(predicted)}};
+  \draw[ptmuted!60] (-1.5,-0.05) -- (-1.5,1.1);
+  % gradient back to the prompt only
+  \draw[ptgrad] (3.0,0.53) -- (3.55,0.53) -- (3.55,4.15) -- (p2.north |- 0,4.15) -- (p2.north);
+  \node[ptlblg, anchor=south] at (0.3,4.15) {$\nabla_P\mathcal{L}$ flows back to $P$ only};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure (b): cross-entropy loss as a function of q
+% =====================================================================
+\newcommand{\figlosscurve}{%
+\begin{tikzpicture}
+\begin{axis}[
+  width=6.4cm, height=5.4cm,
+  xmin=0, xmax=1.05, ymin=0, ymax=3.2,
+  xlabel={probability of the correct class, $q$},
+  ylabel={loss $\mathcal{L}=-\ln q$},
+  xtick={0,0.2,0.4,0.6,0.8,1.0},
+  ytick={0,1,2,3},
+  axis lines=left,
+  axis line style={draw=ptmuted!70},
+  tick style={draw=ptmuted!70},
+  tick label style={font=\scriptsize},
+  label style={font=\footnotesize},
+  grid=major, grid style={draw=ptrule!70, dashed, line width=0.3pt},
+  clip=false,
+]
+  \addplot[domain=0.045:1, samples=150, line width=1.3pt, color=ptblue] {-ln(x)};
+  \addplot[only marks, mark=*, mark size=2.3pt, color=ptred]
+    coordinates {(0.40,0.9163)};
+  \node[anchor=south west, font=\scriptsize, text=ptred]
+    at (axis cs:0.42,1.0) {$q=0.40$: $\mathcal{L}\approx0.916$};
+  \addplot[only marks, mark=o, mark size=2.3pt, color=ptmuted, thick]
+    coordinates {(0.5,0.6931)};
+  \node[anchor=west, font=\scriptsize, text=ptmuted]
+    at (axis cs:0.55,0.74) {chance: $\mathcal{L}\approx0.693$};
+  \addplot[only marks, mark=*, mark size=2.3pt, color=ptgreen]
+    coordinates {(1,0)};
+  \node[anchor=south, font=\scriptsize, text=ptgreen]
+    at (axis cs:1.0,0.1) {$\mathcal{L}=0$};
+\end{axis}
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: where each method places its trainable parameters
+% =====================================================================
+\tikzset{
+  stklayer/.style ={rectangle, rounded corners=1.5pt, draw=ptmuted!60, fill=ptpanel,
+                    minimum width=2.7cm, minimum height=0.5cm, font=\scriptsize, text=ptink},
+  stkhot/.style   ={stklayer, draw=ptorange, fill=ptorange!18},
+  stkright/.style ={stklayer, text width=2.45cm, align=right},
+  stkadapt/.style ={rectangle, rounded corners=1pt, draw=ptgreen, fill=ptgreen!30,
+                    minimum width=1.2cm, minimum height=0.2cm, inner sep=0pt},
+  stktok/.style   ={rectangle, rounded corners=1pt, draw=ptmuted!60, fill=white,
+                    minimum width=0.28cm, minimum height=0.28cm, inner sep=0pt},
+  stkgtok/.style  ={stktok, draw=ptgreen, fill=ptgreen!35},
+}
+% #1 = x centre, #2 = layer style, #3 = number of green (prompt) input tokens
+\newcommand{\ptstack}[3]{%
+  \node[#2] at (#1,3.05) {Layer $L$};
+  \node[text=ptmuted, font=\small] at (#1,2.38) {$\vdots$};
+  \node[#2] at (#1,1.65) {Layer 2};
+  \node[#2] at (#1,0.8)  {Layer 1};
+  \foreach \k in {0,...,6}{%
+    \ifnum\k<#3\relax
+      \node[stkgtok] at ({#1-1.02+0.34*\k},0.02) {};
+    \else
+      \node[stktok]  at ({#1-1.02+0.34*\k},0.02) {};
+    \fi}
+  \draw[ptarrow, line width=0.5pt] (#1,0.2) -- (#1,0.53);
+}
+\newcommand{\figpeftstack}{%
+\begin{tikzpicture}
+  % ---- full fine-tuning ----
+  \node[font=\footnotesize\bfseries, text=ptorange] at (0,3.95) {Full fine-tuning};
+  \ptstack{0}{stkhot}{0}
+  % ---- adapters ----
+  \node[font=\footnotesize\bfseries] at (3.8,3.95) {Adapters};
+  \ptstack{3.8}{stklayer}{0}
+  \foreach \y in {1.225,2.075,3.475}{\node[stkadapt] at (3.8,\y) {};}
+  % ---- prefix tuning ----
+  \node[font=\footnotesize\bfseries] at (7.6,3.95) {Prefix tuning};
+  \ptstack{7.6}{stkright}{3}
+  \foreach \y in {0.8,1.65,3.05}{
+    \foreach \k in {0,1,2}{\node[stkgtok] at ({7.6-1.1+0.32*\k},\y) {};}}
+  % ---- prompt tuning ----
+  \node[font=\footnotesize\bfseries, text=ptgreen] at (11.4,3.95) {Prompt tuning};
+  \ptstack{11.4}{stklayer}{3}
+  % ---- task-specific share (Lester et al., 2021; Houlsby et al., 2019) ----
+  \foreach \x/\s in {0/{100\%}, 3.8/{2--4\%}, 7.6/{0.1--1\%}, 11.4/{${<}\,0.01\%$}}{
+    \node[font=\footnotesize, text=ptink] at (\x,-0.55) {task-specific: \textbf{\s}};}
+  % ---- legend ----
+  \node[stkhot, minimum width=0.45cm, minimum height=0.3cm] at (1.3,-1.25) {};
+  \node[anchor=west, font=\scriptsize, text=ptmuted] at (1.6,-1.25) {trained (all weights)};
+  \node[stkgtok, minimum width=0.45cm, minimum height=0.3cm] at (5.0,-1.25) {};
+  \node[anchor=west, font=\scriptsize, text=ptmuted] at (5.3,-1.25) {trained, task-specific};
+  \node[stklayer, minimum width=0.45cm, minimum height=0.3cm] at (8.7,-1.25) {};
+  \node[anchor=west, font=\scriptsize, text=ptmuted] at (9.0,-1.25) {frozen, shared};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: taxonomy of prompt-tuning methods (Li et al., 2025)
+% =====================================================================
+\newcommand{\figtaxonomy}{%
+\begin{tikzpicture}[
+   txroot/.style  ={ptnode, fill=ptink, draw=ptink, text=white, minimum width=2.3cm,
+                    minimum height=0.95cm, font=\footnotesize\bfseries},
+   txdirect/.style={pttuned, minimum width=2.5cm, minimum height=0.8cm, font=\footnotesize\bfseries},
+   txtrans/.style ={ptnode, fill=ptblue!12, draw=ptblue, minimum width=2.5cm,
+                    minimum height=0.8cm, font=\footnotesize\bfseries},
+   txcat/.style   ={ptnode, minimum width=3.0cm, minimum height=0.55cm, font=\footnotesize},
+   txleaf/.style  ={anchor=west, font=\footnotesize, text=ptink},
+   txedge/.style  ={draw=ptmuted!80, line width=0.7pt}]
+  \node[txroot] (r) at (0,-0.35) {Prompt-tuning\\methods};
+  \node[txdirect] (d) at (3.2,1.6) {Direct prompt\\learning};
+  \node[txtrans]  (t) at (3.2,-2.3) {Transfer\\learning};
+  \draw[txedge] (r.east) -- ++(0.3,0) |- (d.west);
+  \draw[txedge] (r.east) -- ++(0.3,0) |- (t.west);
+  \node[ptlbl, font=\scriptsize, anchor=north] at (3.2,1.1) {one training stage\\on the target task};
+  \node[ptlbl, font=\scriptsize, anchor=north] at (3.2,-2.8) {reuse prompts learned\\on source tasks};
+  % ---- direct branch ----
+  \node[txcat] (dg) at (6.55,3.1)  {General};
+  \node[txcat] (de) at (6.55,2.1)  {Encoder-based};
+  \node[txcat] (dd) at (6.55,1.1)  {Decomposition};
+  \node[txcat] (dm) at (6.55,0.1)  {Mixture of experts};
+  \foreach \n in {dg,de,dd,dm}{\draw[txedge] (d.east) -- ++(0.3,0) |- (\n.west);}
+  \node[txleaf] at (8.2,3.1)  {Prompt Tuning, XPrompt, P-Tuning v2};
+  \node[txleaf] at (8.2,2.1)  {P-Tuning, Residual PT, Prefix Tuning};
+  \node[txleaf] at (8.2,1.1)  {DPT, DePT};
+  \node[txleaf] at (8.2,0.1)  {SMoP, PT-MoE};
+  % ---- transfer branch ----
+  \node[txcat] (tg) at (6.55,-1.3) {General};
+  \node[txcat] (te) at (6.55,-2.3) {Encoder-based};
+  \node[txcat] (td) at (6.55,-3.3) {Decomposition};
+  \foreach \n in {tg,te,td}{\draw[txedge] (t.east) -- ++(0.3,0) |- (\n.west);}
+  \node[txleaf] at (8.2,-1.3) {SPoT, ATTEMPT};
+  \node[txleaf] at (8.2,-2.3) {TransPrompt, CTPT};
+  \node[txleaf] at (8.2,-3.3) {MPT};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: spectrum of adaptation methods (from the presentation)
+% =====================================================================
+\newcommand{\figspectrum}{%
+\begin{tikzpicture}
+  \draw[ptrule, line width=1.4pt, -{Stealth[length=7pt]}] (0,0) -- (11.2,0);
+  \foreach \x/\lbl/\col/\sub in {
+      0.6/{Prompt\\engineering}/ptslate/{write the prompt\\by hand},
+      5.6/{Prompt\\tuning}/ptgreen/{learn a few vectors,\\freeze the model},
+      10.6/{Full\\fine-tuning}/ptorange/{update every\\weight}}{
+    \fill[\col] (\x,0) circle (3.5pt);
+    \node[font=\small\bfseries, text=\col, align=center] at (\x,0.8) {\lbl};
+    \node[ptlbl, font=\scriptsize] at (\x,-0.7) {\sub};
+  }
+  \node[ptlbl, font=\scriptsize] at (5.6,-1.55)
+    {$\longleftarrow$ faster and cheaper \hspace{2.2cm} more control, more cost $\longrightarrow$};
+\end{tikzpicture}}
+
+
+% =====================================================================
+%  Figure: qualitative radar comparison (ratings from the presentation)
+% =====================================================================
+\newcommand{\figradar}{%
+\begin{tikzpicture}
+  \def\R{2.0}
+  \foreach \r in {1,2,3}{\draw[ptrule, dashed, line width=0.4pt] (0,0) circle ({\r*\R/3});}
+  \foreach \ang in {90,18,-54,-126,162}{\draw[ptrule, line width=0.6pt] (0,0) -- (\ang:\R);}
+  \node[ptlbl, anchor=south] at (90:{\R+0.12}) {Speed of implementation};
+  \node[ptlbl, anchor=west, align=left] at (18:{\R+0.15}) {Data\\requirement};
+  \node[ptlbl, anchor=north west, align=left] at (-54:{\R+0.08}) {Output\\quality};
+  \node[ptlbl, anchor=north east, align=right] at (-126:{\R+0.08}) {Model\\modification};
+  \node[ptlbl, anchor=east, align=right] at (162:{\R+0.15}) {Flexibility};
+  % full fine-tuning: speed 3, data 9, quality 8, modification 8, flexibility 5 (of 9)
+  \draw[ptorange, line width=1.3pt, fill=ptorange, fill opacity=0.14]
+    (90:{3/9*\R}) -- (18:{9/9*\R}) -- (-54:{8/9*\R}) -- (-126:{8/9*\R})
+    -- (162:{5/9*\R}) -- cycle;
+  % prompt tuning: speed 8, data 2, quality 4, modification 1, flexibility 7 (of 9)
+  \draw[ptgreen, line width=1.3pt, fill=ptgreen, fill opacity=0.16]
+    (90:{8/9*\R}) -- (18:{2/9*\R}) -- (-54:{4/9*\R}) -- (-126:{1/9*\R})
+    -- (162:{7/9*\R}) -- cycle;
+  % legend
+  \fill[ptorange, fill opacity=0.3] (4.3,0.55) rectangle ++(0.45,0.3);
+  \draw[ptorange, line width=1pt] (4.3,0.55) rectangle ++(0.45,0.3);
+  \node[anchor=west, font=\footnotesize] at (4.85,0.7) {Full fine-tuning};
+  \fill[ptgreen, fill opacity=0.3] (4.3,-0.05) rectangle ++(0.45,0.3);
+  \draw[ptgreen, line width=1pt] (4.3,-0.05) rectangle ++(0.45,0.3);
+  \node[anchor=west, font=\footnotesize] at (4.85,0.1) {Prompt tuning};
+\end{tikzpicture}}

@@ -1,0 +1,43 @@
+% =====================================================================
+%  all-figures.tex -- draws every figure of the report once, one figure
+%  per page, into all-figures.pdf. main.tex includes those pages, so the
+%  report itself compiles quickly (Overleaf's free plan has a short
+%  compile time limit, and TikZ/pgfplots drawings are slow to typeset).
+%
+%  You only need to recompile this file after changing a drawing in
+%  figures.tex. On Overleaf: Menu -> Main document -> all-figures.tex,
+%  recompile, download the PDF, upload it as all-figures.pdf, and switch
+%  Main document back to main.tex.
+%
+%  The font setup matches main.tex so the figures look identical.
+%  Keep the page order below in sync with the list in main.tex.
+% =====================================================================
+\documentclass[12pt,tikz,border=1pt]{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{amsmath,amssymb}
+\usepackage{setspace}
+\setstretch{1.1}
+
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,decorations.pathreplacing,shapes.geometric}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\input{palette.tex}
+\input{figures.tex}
+
+\begin{document}
+\figservingcompare   % page  1  Figure  1
+\figanalogy          % page  2  Figure  2
+\figarchitecture     % page  3  Figure  3
+\figparams           % page  4  Figure  4
+\figworkflow         % page  5  Figure  5
+\figexampleforward   % page  6  Figure  6a
+\figlosscurve        % page  7  Figure  6b
+\figpeftstack        % page  8  Figure  7
+\figtaxonomy         % page  9  Figure  8
+\figspectrum         % page 10  Figure  9
+\figradar            % page 11  Figure 10
+\end{document}
