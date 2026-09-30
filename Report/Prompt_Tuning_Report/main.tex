@@ -1,53 +1,31 @@
-% =====================================================================
-%  Prompt Tuning -- CSE 200 report
-%  main.tex        : preamble and text (this file)
-%  palette.tex     : colours shared with the slides
-%  figures.tex     : every TikZ / pgfplots figure, one macro per figure
-%  all-figures.tex : draws all figures once into all-figures.pdf
-%  all-figures.pdf : pre-drawn figures that this file includes
-%
-%  Compile with pdfLaTeX, twice (Overleaf: Menu -> Compiler -> pdfLaTeX).
-%  Primary sources: Lester, Al-Rfou & Constant (2021), arXiv:2104.08691;
-%                   Li, Su & Collier (2025), arXiv:2507.06085.
-% =====================================================================
 \documentclass[12pt]{article}
 
-% ---------- Fonts & Encoding ----------
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{mathpazo}          % Palatino-style text & math font
+\usepackage{mathpazo}
 \usepackage{microtype}
 
-% ---------- Layout ----------
 \usepackage[a4paper, margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
 \usepackage{setspace}
 
-% ---------- Mathematics, tables, lists, captions ----------
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs,array,tabularx}
 \usepackage{enumitem}
 \usepackage[font=small, labelfont=bf, textfont=it, labelsep=colon, skip=6pt]{caption}
 \usepackage{subcaption}
 \usepackage{titlesec}
-\usepackage[titles]{tocloft}   % tighter table of contents (fits on one page)
+\usepackage[titles]{tocloft}
 \setlength{\cftbeforesecskip}{5pt}
 
-% ---------- Colours (match original title page) ----------
 \definecolor{buetmaroon}{RGB}{130,26,34}
 \definecolor{titlegray}{RGB}{120,120,120}
 \definecolor{subtitleblue}{RGB}{70,90,150}
 \definecolor{headblue}{RGB}{44,66,128}
-\input{palette.tex}            % colours of the slides
+\input{palette.tex}
 
-% ---------- Figures ----------
-% false (default): include the pre-drawn pages of all-figures.pdf. This is
-%                  fast and fits Overleaf's free compile time limit.
-% true:            draw every TikZ/pgfplots figure live from figures.tex.
-%                  This is slow; use it only with a longer time limit.
-% After editing a drawing in figures.tex, recompile all-figures.tex.
 \newif\ifdrawfigures
 \drawfiguresfalse
 
@@ -58,7 +36,6 @@
   \pgfplotsset{compat=1.18}
   \input{figures.tex}
 \else
-  % Page numbers follow the order in all-figures.tex.
   \newcommand{\figpage}[1]{\includegraphics[page=#1]{all-figures.pdf}}
   \newcommand{\figservingcompare}{\figpage{1}}
   \newcommand{\figanalogy}{\figpage{2}}
@@ -73,29 +50,23 @@
   \newcommand{\figradar}{\figpage{11}}
 \fi
 
-% ---------- Links (loaded late, as hyperref requires) ----------
 \usepackage[colorlinks=true, linkcolor=headblue, citecolor=ptgreen,
             urlcolor=headblue]{hyperref}
 \hypersetup{pdftitle={Prompt Tuning: A Study on Task-Specific Prompt Learning},
             pdfauthor={Sk. Arib Rajin Shahan, Sadman Zaman, Fatin Nehal Zubaeer},
             pdfsubject={CSE 200 report on parameter-efficient prompt tuning}}
-\usepackage{algorithm}         % after hyperref, so algorithm links resolve
+\usepackage{algorithm}
 \usepackage{algpseudocode}
 \algrenewcommand\algorithmicrequire{\textbf{Input:}}
 \algrenewcommand\algorithmicensure{\textbf{Output:}}
 
-% ---------- Headings ----------
 \titleformat{\section}{\normalfont\Large\bfseries\color{headblue}}{\thesection.}{0.5em}{}
-            [\nobreak\vspace{1pt}{\color{ptrule}\nobreak\titlerule[0.6pt]}\nobreak]% keep rule + text with title
+            [\nobreak\vspace{1pt}{\color{ptrule}\nobreak\titlerule[0.6pt]}\nobreak]%
 \titleformat{\subsection}{\normalfont\large\bfseries\color{headblue}}{\thesubsection.}{0.5em}{}
 \titleformat{\subsubsection}{\normalfont\normalsize\bfseries\color{buetmaroon}}{\thesubsubsection.}{0.5em}{}
 \titlespacing*{\section}{0pt}{18pt plus 4pt minus 2pt}{9pt plus 2pt}
 \titlespacing*{\subsection}{0pt}{13pt plus 3pt minus 2pt}{6pt plus 2pt}
 
-% ---------- Definition boxes ----------
-% Built from plain \fcolorbox/\colorbox rather than tcolorbox, which is slow
-% to load. Usage: \begin{definition}{Title}{key} ... \end{definition};
-% the box can be referenced as \ref{def:key}.
 \newcounter{definition}
 \newsavebox{\defbody}
 \newenvironment{definition}[2]{%
@@ -103,7 +74,7 @@
   \refstepcounter{definition}\label{def:#2}%
   \gdef\deftitle{Definition~\thedefinition: #1}%
   \begin{lrbox}{\defbody}%
-  \begin{minipage}{\dimexpr\linewidth-19.2pt\relax}% 9pt padding each side
+  \begin{minipage}{\dimexpr\linewidth-19.2pt\relax}%
 }{%
   \end{minipage}%
   \end{lrbox}%
@@ -117,18 +88,15 @@
   \par\addvspace{10pt}%
 }
 
-% ---------- Float placement (fewer half-empty float pages) ----------
 \renewcommand{\topfraction}{0.85}
 \renewcommand{\bottomfraction}{0.6}
 \renewcommand{\textfraction}{0.15}
 \renewcommand{\floatpagefraction}{0.75}
 
-% ---------- Tables and lists ----------
 \renewcommand{\arraystretch}{1.25}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \setlist{itemsep=2pt, topsep=4pt}
 
-% ---------- Notation helpers ----------
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\loss}{\mathcal{L}}
 \newcommand{\data}{\mathcal{D}}
@@ -136,7 +104,6 @@
 
 \setstretch{1.1}
 
-% ---------- Header / Footer on every page after the cover ----------
 \setlength{\headheight}{14.5pt}
 \pagestyle{fancy}
 \fancyhf{}
@@ -155,10 +122,7 @@
 
 \begin{document}
 
-% =========================================================
-%                        COVER PAGE
-% =========================================================
-\hypersetup{pageanchor=false}  % the cover and the abstract page are both "page 1"
+\hypersetup{pageanchor=false}
 \begin{titlepage}
 \thispagestyle{empty}
 \centering
@@ -203,9 +167,6 @@
 \end{titlepage}
 \hypersetup{pageanchor=true}
 
-% =========================================================
-%                        ABSTRACT
-% =========================================================
 \newpage
 \thispagestyle{plain}
 
@@ -231,16 +192,11 @@ on small models, and prompts that people cannot read.
 \noindent\textbf{Keywords:} prompt tuning; soft prompts; parameter-efficient fine-tuning;
 large language models; transfer learning.
 
-% =========================================================
-%                        CONTENTS
-% =========================================================
 \newpage
 {\setstretch{1.0}\tableofcontents}
 \newpage
 
-% =========================================================
 \section{Introduction}\label{sec:intro}
-% =========================================================
 
 Large language models learn a great deal about language during pretraining, but most real
 applications need them to do one specific job well, such as classifying reviews or
@@ -306,9 +262,7 @@ choosing between prompt tuning and fine-tuning. Section~\ref{sec:challenges} cov
 challenges and practical guidelines. Section~\ref{sec:discussion} answers the three guiding
 questions, and Section~\ref{sec:conclusion} concludes the report.
 
-% =========================================================
 \section{Background}\label{sec:background}
-% =========================================================
 
 Prompt tuning grew out of two older ways of adapting a language model. One changes the
 weights of the model, and the other changes only its input. We review both below, together
@@ -394,9 +348,7 @@ models~\cite{li2025survey}. The rest of this report focuses on the prompt-based 
   \end{tabularx}
 \end{table}
 
-% =========================================================
 \section{Prompt Tuning}\label{sec:method}
-% =========================================================
 
 We now define prompt tuning precisely. We first contrast soft prompts with hard prompts, then
 state the training objective, and finally work out how many parameters and how much storage
@@ -568,9 +520,7 @@ roughly 100 times less.
 The shared model also allows mixed-task batches, in which every example carries the prompt of
 its own task (Figure~\ref{fig:serving}, right).
 
-% =========================================================
 \section{Training a Soft Prompt}\label{sec:training}
-% =========================================================
 
 Training a soft prompt follows the usual supervised learning loop. The one difference is that
 the optimizer updates a single tensor, the prompt $P$. Figure~\ref{fig:workflow} shows the
@@ -695,9 +645,7 @@ sensitive to the learning rate and to the initialization~\cite{li2025survey}. On
 task Lester et al.\ report training times until convergence that range from a few minutes to
 almost four hours, depending on the prompt length and the model size~\cite{lester2021}.
 
-% =========================================================
 \section{Worked Example: One Training Step}\label{sec:example}
-% =========================================================
 
 Equations~\eqref{eq:concat} to~\eqref{eq:update} are easier to follow with numbers attached.
 In this section we trace one training step on a toy sentiment task. We chose the numbers by
@@ -815,9 +763,7 @@ task-specific representation that steers the frozen model toward the correct lab
 training converges, we save the final prompt $P^{\star}$. It is the only thing that has to be
 stored for this task.
 
-% =========================================================
 \section{Empirical Evidence}\label{sec:evidence}
-% =========================================================
 
 This section summarizes the experiments of Lester et al.~\cite{lester2021}, who introduced
 prompt tuning. All numbers in this section are quoted from their paper. They trained prompts
@@ -1033,9 +979,7 @@ BoolQ questions belong to the Nature/Science category. The prompt may therefore 
 model to read inputs in a particular domain. Taken as whole sequences, however, the learned
 prompts cannot be interpreted.
 
-% =========================================================
 \section{Relation to Other Parameter-Efficient Methods}\label{sec:related}
-% =========================================================
 
 Prompt tuning is one of several methods that adapt a frozen model. In this section we compare
 it with its closest relatives and then give an overview of the variants that researchers have
@@ -1138,9 +1082,7 @@ These variants generally keep the language model frozen. The limitations listed 
 gain stability or accuracy at the cost of extra parameters, extra hyperparameters, or a more
 complex training procedure~\cite{li2025survey}.
 
-% =========================================================
 \section{Choosing Between Prompt Tuning and Fine-Tuning}\label{sec:choosing}
-% =========================================================
 
 Neither prompt tuning nor full fine-tuning is the best choice in every situation.
 Figure~\ref{fig:spectrum} places both on a spectrum together with prompt engineering. Prompt
@@ -1210,9 +1152,7 @@ closes (Section~\ref{sec:scale}).
   \label{fig:radar}
 \end{figure}
 
-% =========================================================
 \section{Challenges and Practical Guidelines}\label{sec:challenges}
-% =========================================================
 
 Prompt tuning is still an active research area. This section lists the problems that remain
 open and then gives guidelines for the one part of the pipeline that people still write by
@@ -1285,9 +1225,7 @@ the writer to say exactly what is meant, to avoid ambiguity, and to prefer posit
 statements. We found this link helpful while preparing the presentation. A prompt, like a
 report, has to make sense to a reader who cannot ask the writer what was meant.
 
-% =========================================================
 \section{Discussion}\label{sec:discussion}
-% =========================================================
 
 We now return to the three guiding questions of Section~\ref{sec:objectives} and then state
 the limits of what this study can claim.
@@ -1323,9 +1261,7 @@ Figure~\ref{fig:radar} is a qualitative judgment. We also did not compare prompt
 directly with other popular PEFT methods such as LoRA~\cite{hu2022}. Such a comparison would
 need controlled experiments on the same models and tasks.
 
-% =========================================================
 \section{Conclusion}\label{sec:conclusion}
-% =========================================================
 
 In this report we studied prompt tuning, which adapts a frozen language model by learning a
 short soft prompt instead of changing the weights of the model. We expressed the method as
@@ -1342,9 +1278,6 @@ We still find its main idea convincing. When the parameters that define a task a
 apart from the parameters that hold general knowledge of language, one frozen model can serve
 many tasks, and each extra task costs only a few kilobytes.
 
-% =========================================================
-%                        REFERENCES
-% =========================================================
 \newpage
 \begin{thebibliography}{99}
 \small
